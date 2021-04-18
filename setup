@@ -28,9 +28,9 @@ apt install -y --no-install-recommends \
 	rename \
 	curl \
 	dconf-editor \
-        gnome-tweak-tool \
-        gnome-shell-extensions \
-        gnome-shell-extension-appindicator
+    gnome-tweak-tool \
+    gnome-shell-extensions \
+    gnome-shell-extension-appindicator
 
 # nautilus addons
 apt install -y --no-install-recommends \
@@ -51,10 +51,6 @@ apt install -y --no-install-recommends \
 pip3 completion -b >> ~/.bashrc
 pip3 install pynvim jedi yapf pylint
 
-add-apt-repository ppa:fontforge/fontforge -y
-apt update && apt install -y \
-	fontforge
-
 echo export VISUAL=vim >> ~/.bashrc
 echo export EDITOR="\$VISUAL" >> ~/.bashrc
 
@@ -65,10 +61,10 @@ apt update && apt install -y --no-install-recommends \
 	gimp \
 	gimp-help-de \
 	gimp-help-en \
-        shotwell \
-        vlc \
-        rhythmbox \
-        rhythmbox-plugins \
+    shotwell \
+    vlc \
+    rhythmbox \
+    rhythmbox-plugins \
 	filezilla \
 	transmission
 
@@ -146,8 +142,6 @@ gsettings set \
 FOLDER=`gsettings get org.gnome.Terminal.ProfilesList default | cut -d "'" -f2 | cut -d "'" -f1`
 $(gsettings set "/org/gnome/terminal/legacy/profiles:/:$FOLDER/audible-bell" false)
 gsettings set "/org/gnome/terminal/legacy/profiles:/:$FOLDER/background-color" 'rgb(46,52,54)'
-gsettings set "/org/gnome/terminal/legacy/profiles:/:$FOLDER/"
-gsettings set "/org/gnome/terminal/legacy/profiles:/:$FOLDER/"
 
 # setup
 ## download dotfile repo
@@ -185,5 +179,7 @@ cd ..
 cryfs-unmount tmp
 rm -d tmp
 
+echo rebooting in 15 seconds
+sleep 15
 
 reboot

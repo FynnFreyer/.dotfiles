@@ -6,8 +6,8 @@
   <property name="pressureMultiplier" value="1.30000000"/>
   <property name="zoomGesturesEnabled" value="true"/>
   <property name="selectedToolbar" value="custom Copy"/>
-  <property name="lastSavePath" value="/home/fynn/Dropbox/Documents/Uni/Mathe_2/Zettel"/>
-  <property name="lastOpenPath" value="/home/fynn/Documents/Uni/Mathe_2/Zettel"/>
+  <property name="lastSavePath" value="/home/fynn/Documents/Uni/Software_Engineering"/>
+  <property name="lastOpenPath" value="/home/fynn/Downloads/dokumente_bewerbung"/>
   <property name="lastImagePath" value=""/>
   <property name="zoomStep" value="10.00000000"/>
   <property name="zoomStepScroll" value="2.00000000"/>
@@ -181,7 +181,7 @@
     </data>
   </data>
   <data name="tools">
-    <attribute name="current" type="string" value="selectRect"/>
+    <attribute name="current" type="string" value="eraser"/>
     <data name="drawArrow">
       <attribute name="drawingType" type="string" value="default"/>
     </data>

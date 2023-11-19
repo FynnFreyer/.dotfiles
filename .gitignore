@@ -1,5 +1,6 @@
 vpn/
 .idea/
+!python/.local/lib/
 
 ### Python template
 # Byte-compiled / optimized / DLL files

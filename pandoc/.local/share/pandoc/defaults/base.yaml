@@ -1,0 +1,33 @@
+# TODO don't break lists over pages: https://tex.stackexchange.com/a/86063
+
+verbosity: INFO
+fail-if-warnings: true
+log-file: ${HOME}/.local/state/pandoc/pandoc.log
+
+resource-path:
+  - .
+  - ./images
+  - ./assets
+  - ${.}
+  - ${.}/../filters
+  - ${.}/../style
+  - ${.}/../style/citations
+  - ${.}/../style/css
+  - ${.}/../style/tex
+  - ${.}/../style/yaml
+  - ${HOME}/Documents/Notizen/Obisdian/Dateien
+  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Privat
+  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Science
+  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Work
+
+metadata-files:
+  - ${.}/../style/yaml/base.yaml
+include-in-header:
+  - ${.}/../style/tex/base.tex
+
+filters:
+  - ${.}/../filters/plantuml.py
+  - ${.}/../filters/transclude.py
+
+citeproc: true
+csl: ${.}/../style/citations/ieee.csl

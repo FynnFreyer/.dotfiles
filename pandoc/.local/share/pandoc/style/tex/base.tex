@@ -1,0 +1,42 @@
+% make pictures float in the center, right where they are defined
+\usepackage{float}
+\makeatletter
+\def\fps@figure{H}
+\makeatother
+
+% allows checking if commands are defined and hooking into environments
+\usepackage{etoolbox}
+
+% allows customization of lists
+\usepackage{enumitem}
+% use bullets on every indentation level
+\setlist[itemize]{label=$\bullet$}
+% allow for deeper nesting
+\setlistdepth{9}
+\renewlist{itemize}{itemize}{9}
+
+% provides fancy colored boxes
+% MUST be included before redefining verbatim
+% otherwise it messes up the line breaking
+\usepackage{tcolorbox}
+
+% provides fancier verbatim environments
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+
+% redefine verbatim in terms of fancy verbatim
+% to allow for softbreaks in code that's too long
+\renewenvironment{verbatim}
+  {
+    \VerbatimEnvironment%
+    \begin{Verbatim}[breaklines,breakanywhere,commandchars=\\\{\}]%
+  }
+  {\end{Verbatim}}
+% ensure codeblocks don't cross page boundaries
+\BeforeBeginEnvironment{verbatim}{\begin{samepage}}
+\AfterEndEnvironment{verbatim}{\end{samepage}}
+
+% same, but applies if highlighting is used
+\BeforeBeginEnvironment{Highlighting}{\begin{samepage}}
+\AfterEndEnvironment{Highlighting}{\end{samepage}}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}

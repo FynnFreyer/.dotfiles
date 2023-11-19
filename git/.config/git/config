@@ -1,0 +1,40 @@
+[include]
+    path = id/id.config
+    path = rerere.config
+    path = lfs.config
+    path = defaults.config
+
+[init]
+	defaultBranch = main
+
+[core]
+    autocrlf = input
+    editor = nano
+    pager = less
+
+# [core.whitespace]
+#     tabwidth=4
+#     tab-in-indent
+#     trailing-space
+#     cr-at-eol
+
+[color]
+    # for parsing status the porcelain mode should be used, porcelain never prints color
+    status = always
+    interactive = always
+
+[status]
+    relativePaths = false
+    branch = true
+[safe]
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .
+	directory = .

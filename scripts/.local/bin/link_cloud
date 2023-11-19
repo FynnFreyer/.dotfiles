@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import logging
+from pathlib import Path
+
+user_dirs = ['Documents', 'Music', 'Pictures', 'Templates', 'Videos']
+home = Path.home()
+mount = home / 'mnt/cloud.fynns.site'
+
+for dir in user_dirs:
+    if not mount.is_dir():
+        logging.error(f'Aborting, because "{mount}" is not an existing directory!')
+        break
+
+    dirpath = home / dir
+    if list(dirpath.iterdir()):
+        logging.warning(f'Skipping "{dir}", because it has contents!')
+        continue
+
+    mountpath = mount / dir
+    if not mountpath.is_dir():
+        logging.warning(f'Skipping "{dir}", because mountpath "{mountpath}" was not found!')
+        continue
+
+    dirpath.rmdir()
+    dirpath.symlink_to(mountpath)

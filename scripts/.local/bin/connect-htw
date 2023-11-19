@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+
+set -eEuo pipefail  # make bash strict
+trap cleanup EXIT
+trap "exit 1" HUP QUIT ABRT TERM ERR
+
+# only exit on sigint if HEED_INT is set
+# this allows to abort fingerprint prompt on sudo
+trap 'if $HEED_INT; then exit 2; fi' INT
+
+# IFS=$'\n\t'
+
+# set -xv  # uncomment for debugging
+cleanup() {
+    ret_code=$?
+
+    set +eEuo pipefail  # make bash act normal after exit
+
+    teardown_tun # ensure connection cleanup
+    if [[ -n ${PW_PIPE:+x} ]]; then  # if a fifo was created
+        rm -f $PW_PIPE  # ensure cleanup
+    fi
+    $VERBOSE && echo "Bye!"
+
+    # set +xv  # uncomment for debugging
+
+    exit $ret_code
+}
+
+# get the directory of this script, as per https://stackoverflow.com/a/246128
+SCRIPT_DIR=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+
+# set defaults
+VERBOSE=true
+
+URL=vpncl.htw-berlin.de
+AUTH_GROUP=HTW-SSL-VPN-Split  # only tunnel relevant traffic by default
+
+USER=           # no user set -> ask for user
+PASSWORD_FILE=  # no file set -> ask for pw
+
+DEVICE=tun1
+
+# define help message
+usage() {
+    local prog=$(basename "${0}")
+    local indent_length="${#prog}"
+    local indent=$(printf "%${indent_length}s")
+
+    cat << EOF
+NAME
+    $prog - Connect to the HTW network via VPN.
+
+SYNOPSIS
+    $prog [-h | --help] [-v | --verbose] [-q | --quiet]
+    $indent [-s | --split] [-f | --full] [-c | --full-cl] [-m | --man]
+    $indent [-d | --dev | --device device] [-u | --user name]
+    $indent [-p | --passwd file]
+
+DESCRIPTION
+
+    This script uses $(printf "\e]8;;https://wiki.archlinux.org/title/OpenConnect\aOpenConnect\e]8;;\a") to connect to the Cisco-VPN securing the
+    HTW-network.
+    
+    This script needs the ip and openconnect commands to be available in PATH
+    and administrator rights to execute.
+
+OPTIONS
+
+    Basic Options
+
+        -h, --help     Display this help message and exit.
+        -v, --verbose  Print more output. (Default)
+        -q, --quiet    Print less output.
+
+    Profile Options
+
+        -s, --split    Only tunnel connections to HTW domains. (Default)
+        -f, --full     Tunnel all connections through the HTW network.
+        -c, --full-cl  Needed for some services outside the HTW network.
+        -m, --man      Use the management profile to connect to the HTW network.
+
+    Login Options
+
+        -u, --user     The username to use for login.
+        -p, --passwd   Specify a file to read the password from (may be - for
+                       stdin). DO NOT pass the password itself here!
+
+    Advanced Options
+
+        -d, --device   Use (and create if necessary) the specified tun device.
+                       (Defaults to tun1)
+
+EOF
+}
+
+# parse arguments
+get_opts() {
+    while [[ $# -gt 0 ]]; do
+        local argument=$1
+        case $argument in
+            # Basic Options
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            -v|--verbose)
+                VERBOSE=true  # basically a NOOP
+                ;;
+            -q|--quiet)
+                VERBOSE=false
+                ;;
+            # Profile Options
+            -s|--split)
+                AUTH_GROUP=HTW-SSL-VPN-Split
+                ;;
+            -f|--full)
+                AUTH_GROUP=HTW-SSL-VPN-Full
+                ;;
+            -c|--full-cl)
+                AUTH_GROUP=HTW-SSL-VPNCL-Full
+                ;;
+            -m|--man)
+                URL="${URL}/man"  # different URL for management access
+            	AUTH_GROUP=HTW-SSL-VPN-MAN
+                ;;
+            # Login Options
+            -u|--user)
+                shift
+                USER="${1}"
+                ;;
+            -p|--pass*)
+                shift
+                PASSWORD_FILE="${1}"
+                ;;
+            # Advanced Options
+            -d|--dev*)
+                shift
+                DEVICE="${1}"
+                ;;
+            # Unknown Options
+            -*)  # throw on unrecognized flags
+                echo -e "Unknown flag ${argument}\n"
+                usage
+                exit 1
+                ;;
+            *)  # throw on positional args
+                echo -e "Unknown argument ${argument}\n"
+                usage
+                exit 1
+                ;;
+        esac
+        shift
+    done
+}
+
+setup_tun() {
+    # see whether a device tun1 is setup already
+    tun_setup=$(ip tuntap list | grep "${DEVICE}:")
+    if [[ -z "$tun_setup" ]]; then  # no tun device setup
+        $VERBOSE && echo "Creating new tun device ${DEVICE}"
+        $VERBOSE && sudo ip tuntap add dev "${DEVICE}" mode tun \
+                 || sudo ip tuntap add dev "${DEVICE}" mode tun 1> /dev/null 2>&1
+    fi
+
+    $VERBOSE && echo "Start tun device ${DEVICE}"
+    $VERBOSE && sudo ip link set dev "${DEVICE}" up \
+             || sudo ip link set dev "${DEVICE}" up 1> /dev/null 2>&1
+
+}
+
+teardown_tun() {
+    # check whether device is up
+    device_up=$(ip link show "${DEVICE}" up)
+    if [[ -n "${device_up}" ]]; then
+        $VERBOSE && echo "Stop tun device ${DEVICE}"
+        $VERBOSE && sudo ip link set dev "${DEVICE}" down \
+                 || sudo ip link set dev "${DEVICE}" down 1> /dev/null 2>&1
+    fi
+}
+
+connect_htw() {
+    $VERBOSE && echo "Connect using ${AUTH_GROUP} profile"
+
+    # fedora does not allow insecure crypto, but the HTW-VPN only supports
+    # TLSv1.0 with a bad cipher
+    #   see https://gitlab.com/openconnect/openconnect/-/issues/326
+    #   and https://gitlab.com/openconnect/openconnect/-/issues/253
+    # this is why we overwrite GNUTLS_SYSTEM_PRIORITY_FILE here + preserve
+    # it in sudo and also set a gnutls priority manually for openconnect
+
+    export GNUTLS_SYSTEM_PRIORITY_FILE=/dev/null
+    GNU_TLS_PRIO=NORMAL:+SHA256:%COMPAT
+
+    # if no user was set, we ask for one
+    if [[ -z $USER ]]; then
+        IFS= read -rp 'Username: ' USER
+    fi
+
+    # use a named pipe to read the password from later,
+    # so we can just sudo without redirecting echo in a subshell,
+    # (which would make the pw show up in the process table)
+    PW_PIPE=$(mktemp -u)  # generate a tmp name (not local bc. of cleanup)
+    mkfifo -m 600 $PW_PIPE  # create a fifo with restricted access
+
+    # if a password file was provided we read from it
+    if [[ -n "${PASSWORD_FILE}" ]]; then
+        cat "${PASSWORD_FILE}" > $PW_PIPE &
+    else  # otherwise we ask for the password manually
+        unset -v PASSWORD  # make sure PW is not exported
+        set +a  # make sure vars are not exported by default
+        IFS= read -rsp 'Password: ' PASSWORD  # get the PW
+        echo ""
+        printf "${PASSWORD}" > $PW_PIPE &
+        unset PASSWORD  # make sure PW is unavailable now
+    fi
+
+    # conditional execution with && and || is not possible,
+    # because openconnect always exits with 0
+    if $VERBOSE; then
+        sudo --preserve-env=GNUTLS_SYSTEM_PRIORITY_FILE \
+             openconnect ${URL} \
+                 --user "${USER}" \
+                 --passwd-on-stdin \
+                 --authgroup=${AUTH_GROUP} \
+                 --interface="${DEVICE}" \
+                 --gnutls-priority=${GNU_TLS_PRIO} < $PW_PIPE
+    else
+        # openconnect sends server prompts on stderr
+        # and connection information on stdout
+
+        sudo --preserve-env=GNUTLS_SYSTEM_PRIORITY_FILE \
+             openconnect ${URL} \
+                 --user "${USER}" \
+                 --passwd-on-stdin \
+                 --authgroup=${AUTH_GROUP} \
+                 --interface="${DEVICE}" \
+                 --gnutls-priority=${GNU_TLS_PRIO} 1> /dev/null 2>&1 < $PW_PIPE
+
+    fi
+}
+
+main() {
+    # we could also check $EUID, but this automatically prompts for sudo
+    HEED_INT=false  # allow sigint for sudo, to abort fingerprint prompt
+    if sudo true; then
+        HEED_INT=true
+        setup_tun
+        connect_htw
+        exit 0
+    else
+        echo -e "\n$(basename ${0}): Needs to be run as root.\n"
+        usage
+        exit 1
+    fi
+    exit 2
+}
+
+# only run this if executed as a script, not if sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	get_opts "${@}"
+	main
+fi

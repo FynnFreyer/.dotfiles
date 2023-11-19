@@ -1,0 +1,157 @@
+/* Taken from https://protocol.mozilla.org/ */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+:root {
+    --green-05: #e3fff3;
+    --green-10: #d1ffee;
+    --green-20: #b3ffe3;
+    --green-30: #88ffd1;
+    --green-40: #54ffbd;
+    --green-50: #3fe1b0;
+    --green-60: #2ac3a2;
+    --green-70: #008787;
+    --green-80: #005e5e;
+    --green-90: #08403f;
+
+    --blue-05: #aaf2ff;
+    --blue-10: #80ebff;
+    --blue-20: #00ddff;
+    --blue-30: #00b3f4;
+    --blue-40: #0090ed;
+    --blue-50: #0060df;
+    --blue-60: #0250bb;
+    --blue-70: #054096;
+    --blue-80: #073072;
+    --blue-90: #09204d;
+
+    --violet-05: #e7dfff;
+    --violet-10: #d9bfff;
+    --violet-20: #cb9eff;
+    --violet-30: #c689ff;
+    --violet-40: #ab71ff;
+    --violet-50: #9059ff;
+    --violet-60: #7542e5;
+    --violet-70: #592acb;
+    --violet-80: #45278d;
+    --violet-90: #321c64;
+
+    --purple-05: #f7e2ff;
+    --purple-10: #f6b8ff;
+    --purple-20: #f68fff;
+    --purple-30: #f770ff;
+    --purple-40: #d74cf0;
+    --purple-50: #b833e1;
+    --purple-60: #952bb9;
+    --purple-70: #722291;
+    --purple-80: #4e1a69;
+    --purple-90: #2b1141;
+
+    --pink-05: #ffdef0;
+    --pink-10: #ffb4db;
+    --pink-20: #ff8ac5;
+    --pink-30: #ff6bba;
+    --pink-40: #ff4aa2;
+    --pink-50: #ff298a;
+    --pink-60: #e31587;
+    --pink-70: #c60084;
+    --pink-80: #7f145b;
+    --pink-90: #50134b;
+
+    --red-05: #ffdfe7;
+    --red-10: #ffbdc5;
+    --red-20: #ff9aa2;
+    --red-30: #ff848b;
+    --red-40: #ff6a75;
+    --red-50: #ff4f5e;
+    --red-60: #e22850;
+    --red-70: #c50042;
+    --red-80: #810220;
+    --red-90: #440306;
+
+    --orange-05: #fff4de;
+    --orange-10: #ffd5b2;
+    --orange-20: #ffb587;
+    --orange-30: #ffa266;
+    --orange-40: #ff8a50;
+    --orange-50: #ff7139;
+    --orange-60: #e25920;
+    --orange-70: #cc3d00;
+    --orange-80: #9e280b;
+    --orange-90: #7c1504;
+
+    --yellow-05: #ffffcc;
+    --yellow-10: #ffff98;
+    --yellow-20: #ffea80;
+    --yellow-30: #ffd567;
+    --yellow-40: #ffbd4f;
+    --yellow-50: #ffa436;
+    --yellow-60: #e27f2e;
+    --yellow-70: #c45a27;
+    --yellow-80: #a7341f;
+    --yellow-90: #960e18;
+
+    --light-gray-05: #ffffff;
+    --light-gray-10: #f9f9fb;
+    --light-gray-20: #f0f0f4;
+    --light-gray-30: #e0e0e6;
+    --light-gray-40: #cfcfd8;
+    --light-gray-50: #bfbfc9;
+    --light-gray-60: #afafba;
+    --light-gray-70: #9f9fad;
+    --light-gray-80: #8f8f9e;
+    --light-gray-90: #80808f;
+
+    --dark-gray-05: #5b5b66;
+    --dark-gray-10: #52525e;
+    --dark-gray-20: #4a4a55;
+    --dark-gray-30: #42414d;
+    --dark-gray-40: #3a3944;
+    --dark-gray-50: #32313c;
+    --dark-gray-60: #2b2a33;
+    --dark-gray-70: #23222b;
+    --dark-gray-80: #1c1b22;
+    --dark-gray-90: #15141a;
+
+    --marketing-gray-10: #f9f9fa;
+    --marketing-gray-20: #ededf0;
+    --marketing-gray-30: #cdcdd4;
+    --marketing-gray-40: #b1b1bc;
+    --marketing-gray-50: #9595a2;
+    --marketing-gray-60: #7a7a8b;
+    --marketing-gray-70: #5e5e72;
+    --marketing-gray-80: #42425a;
+    --marketing-gray-90: #1f2033;
+    --marketing-gray-99: #20123a;
+
+    --ink-05: #393473;
+    --ink-10: #342f6d;
+    --ink-20: #312a64;
+    --ink-30: #2e255d;
+    --ink-40: #2b2156;
+    --ink-50: #291d4f;
+    --ink-60: #271948;
+    --ink-70: #241541;
+    --ink-80: #20123a;
+    --ink-90: #1d1133;
+
+    --black: #000000;
+    --white: #ffffff;
+
+    --link: #0060df;
+    --link-hover: #0250bb;
+    --link-visited: #b833e1;
+    --link-visited-hover: #952bb9;
+
+    --moz-neon-blue: #00ffff;
+    --moz-lemon-yellow: #fff44f;
+    --moz-warm-red: #ff4f5e;
+    --moz-neon-green: #54ffbd;
+    --moz-dark-purple: #6e008b;
+    --moz-dark-green: #005e5e;
+    --moz-dark-blue: #00458b;
+    --moz-dark-gray: #959595;
+    --moz-light-gray: #e7e5e2;
+}

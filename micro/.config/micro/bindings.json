@@ -1,0 +1,5 @@
+{
+    "Alt-/": "lua:comment.comment",
+    "Ctrl-Alt-l": "lua:initlua.pyfmtlnt",
+    "CtrlUnderscore": "lua:comment.comment"
+}

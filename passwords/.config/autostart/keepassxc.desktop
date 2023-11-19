@@ -1,0 +1,19 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+
+Name=KeePassXC
+
+Exec=keepassxc
+Icon=keepassxc
+Terminal=false
+
+Type=Application
+StartupWMClass=keepassxc
+StartupNotify=true
+MimeType=application/x-keepass2;
+
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=2
+

@@ -1,0 +1,8 @@
+[Default Applications]
+application/ereader=calibre-ebook-viewer.desktop
+application/epub+zip=calibre-ebook-viewer.desktop
+text/calendar=mozilla-thunderbird.desktop
+
+[Added Associations]
+text/calendar=mozilla-thunderbird.desktop
+

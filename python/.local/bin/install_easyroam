@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+#
+"""
+This is loosely based on `the DFN documentation for setting up Easyroam on devices with NetworkManager
+<https://doku.tid.dfn.de/de:eduroam:easyroam#installation_der_easyroam_profile_auf_linux_geraeten>`_.
+
+For a `discussion of the security implications <https://cryptography.io/en/latest/limitations/>`_ visit the cryptography
+documentation.
+"""
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Dict
+
+from os import system
+from webbrowser import open as open_browser
+
+from lib.args import parse_args, file_path, dir_path, choice
+
+
+def assert_imports():
+    try:
+        import nmcli
+        import cryptography
+    except (ImportError, ModuleNotFoundError) as e:
+        raise ImportError(
+            'Please install the "nmcli" and "cryptography" modules. You can do so in a virtual environment.\n'
+            'The necessary commands would be:\n'
+            'python -m venv venv && source venv/bin/activate && pip install nmcli cryptography'
+        ) from e
+
+
+def get_parser():
+    parser = ArgumentParser("Easyroam (Eduroam) setup", description="Automate some Easyroam setup tasks.")
+
+    parser.add_argument("pkcs12_cert_file", default=None, type=file_path, nargs='?',
+                        help="The PKCS12 profile to install.")
+
+    parser.add_argument("-d", "--downloads", dest="dl_dir", default=(Path.home() / "Downloads"),
+                        type=dir_path, help="The download directory. Used to find p12 files.")
+
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+                        help="Print changes.")
+    parser.add_argument("-n", "--dry-run", action="store_true",
+                        help="Only print changes, implies verbose.")
+
+    subparsers = parser.add_subparsers(help='sub-command help')
+    askpass_parser = subparsers.add_parser('askpass', help='Acts as a simple askpass utility.')
+
+    return parser
+
+
+def find_cert_files(dl_dir: Path, pattern: str = "*.p12") -> List[Path]:
+    """Try to find a p12 file in the download directory."""
+    return list(sorted(dl_dir.glob(pattern), reverse=True))
+
+
+def prompt_for_generation(easyroam_auth_url: str = "https://www.easyroam.de/Auth/Wayf"):
+    """
+    Prompt a user to generate a PKCS12 profile for easyroam.
+    :param easyroam_auth_url: The URL of the Easyroam choose your institution page.
+    """
+    print(f"Please generate a PKCS12 profile and place it in your download directory, or pass it to the script via "
+          f"argument.")
+    print(f"You can do so after logging into your institutional profile at {easyroam_auth_url}.\n"
+          f'The option can be found under "Manual options > PKCS12 > Generate Profile"')
+
+    open_in_browser = input("Open page in browser? [Y/n]")
+    if open_in_browser:
+        open_browser(easyroam_auth_url)
+    print("Goodbye.")
+    exit(0)
+
+
+@dataclass
+class CertData:
+    """The certificate data needed to configure NetworkManager."""
+
+    client_cert: str
+    common_name: str
+    private_key: str
+    root_ca: str
+
+
+wpa_supplicant_conf_template = """
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=DE
+
+network={
+   ssid="eduroam"
+   scan_ssid=1
+   key_mgmt=WPA-EAP
+   proto=WPA2
+   eap=TLS
+   pairwise=CCMP
+   group=CCMP
+   identity="${common_name}"
+   ca_cert="/etc/easyroam-certs/easyroam_root_ca.pem"
+   client_cert="/etc/easyroam-certs/easyroam_client_cert.pem"
+   private_key="/etc/easyroam-certs/easyroam_client_key.pem"
+   private_key_passwd="${password}"
+}"""
+
+netctl_config_template = """
+description='Easyroam Connection'
+Interface=wlan0
+Connection=wireless
+Security='wpa-configsection'
+IP='dhcp'
+WPAConfigSection=(
+    'ssid="eduroam"'
+    'key_mgmt=WPA-EAP'
+    'eap=TLS'
+    'proto=WPA RSN'
+    'identity="${common_name}"'
+    'client_cert="/etc/netctl/cert/easyroam_client_cert.pem"'
+    'private_key="/etc/netctl/cert/easyroam_client_key.pem"'
+    'altsubject_match="DNS:easyroam.eduroam.de"'
+    'private_key_passwd="${password}"'
+    'ca_cert="/etc/netctl/cert/easyroam_root_ca.pem"'
+    'ca_cert2="/etc/netctl/cert/easyroam_root_ca.pem"'
+)
+"""
+
+
+def get_device():
+    import nmcli
+    nmcli.device.wifi()
+
+
+def parse_cert_meta(meta: str) -> Dict[str, str]:
+    """
+    Parse an RFC4514 string.
+
+    :param meta: The RFC4514 string.
+    :return: A dictionary with the field names pointing to the field values.
+    """
+    return {
+        key: value
+        for key, value
+        in [
+            field.split("=")
+            for field
+            in meta.split(",")
+        ]
+    }
+
+def format_cert_meta(subject_string: str, issuer_string: str) -> str:
+    parse_cert_meta(subject_string)
+    parse_cert_meta(issuer_string)
+    return ""
+
+
+def unpack_cert(cert_file: Path, password: str = "") -> CertData:
+    """
+    Extract necessary information for configuring NetworkManager from the certificate file.
+
+    :param cert_file: The path to a PKCS12 certificate.
+    :return: The data contained in the certificate.
+    """
+    from cryptography.hazmat.primitives import serialization
+
+    with cert_file.open("rb") as cert_fd:
+        cert_data = cert_fd.read()
+        _, private_cert_data, [root_ca_cert_data] = serialization.pkcs12.load_key_and_certificates(
+            cert_data,
+            password.encode("utf-8")
+        )
+
+    subject_string = private_cert_data.subject.rfc4514_string()
+    subject_data = parse_cert_meta(subject_string)
+
+    common_name = subject_data["CN"]
+
+    private_cert_key = private_cert_data.public_bytes(serialization.Encoding.PEM).decode("utf-8")
+
+    root_issuer_data = parse_cert_meta(root_ca_cert_data.issuer)
+    root_subject_data = parse_cert_meta(root_ca_cert_data.subject)
+    root_ca_cert_key = root_ca_cert_data.public_bytes(serialization.Encoding.PEM).decode("utf-8")
+
+    print()
+
+    # from tempfile import mktemp
+    # pem_file = mktemp(".pem")
+    # old_openssl = False
+    # rtn = system(fr"openssl pkcs12 -in {quote(cert_file)} -legacy -nokeys "
+    #              fr"| openssl x509 > {quote(pem_file)}")
+    # if rtn != 0:
+    #     # try without legacy, because this openssl might be old
+    #     old_openssl = True
+    #     rtn = system(fr"openssl pkcs12 -in {quote(cert_file)} -legacy -nokeys "
+    #                  fr"| openssl x509 > {quote(pem_file)}")
+    #
+    # assert rtn == 0, "Client certificate generation failed. Please consult the Easyroam documentation."
+    #
+    # with open(pem_file, "r") as pem_cert:
+    #     pem_contents = pem_cert.read()
+    #
+    # cn_match = search(r"subject=CN = (.*), C", pem_contents)
+    # cn_match = search(r"subject=CN = (.*), C", pem_contents)
+    # cn_match = search(r"subject=CN = (.*), C", pem_contents)
+
+    cmds = [
+
+    ]
+
+    system(r"openssl x509 -noout -subject -in easyroam_client_cert.pem | sed 's/.*CN = \(.*\), C.*/\1/'")
+    system(
+        r"openssl pkcs12 -legacy -in my_easyroam_cert.p12 -nodes -nocerts | openssl rsa -aes256 -out easyroam_client_key.pem")
+    system(r"openssl pkcs12 -in my_easyroam_cert.p12 -cacerts -nokeys > easyroam_root_ca.pem")
+    system(r"openssl pkcs12 -info -in my_easyroam_cert.p12 -legacy -nodes")
+
+
+def main(args: Namespace) -> None:
+    """
+    The main function of the easyroam installer.
+
+    :param args: The parsed cli arguments.
+    """
+
+    cert_file = None
+    if args.pkcs12_cert_file is not None:
+        cert_file = args.pkcs12_cert_file
+    else:
+        downloaded_certs = find_cert_files(args.dl_dir)
+        if len(downloaded_certs) > 1:
+            cert_file = choice("Which certificate should be installed?", downloaded_certs, downloaded_certs[0])
+        elif downloaded_certs:
+            cert_file = downloaded_certs[0]
+        else:
+            prompt_for_generation()
+
+    unpack_cert(cert_file)
+
+    try:
+        assert_imports()
+    except ImportError as e:
+        exit(e)
+
+    print()
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    main(args)

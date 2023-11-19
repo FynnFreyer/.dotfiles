@@ -1,0 +1,24 @@
+\ifdef{\setbeamerfont}{
+    % use small caps for quotes
+    \setbeamerfont{quote}{shape=\scshape}
+}{}
+\ifdef{\setbeamercolor}{
+    % coloring for quotes
+    \setbeamercolor{quote}{fg=white,bg=black}
+}{}
+\ifdef{\setbeamertemplate}{
+    % spacing for quotes
+    \setbeamertemplate{quote begin}{\vspace{15pt}}
+    \setbeamertemplate{quote end}{\vspace{15pt}}
+
+    % style bullets
+    \setbeamertemplate{itemize items}[circle]
+    \setbeamertemplate{enumerate items}[default]
+    
+    % add slide numbers to bottom
+    \setbeamertemplate{footline}{
+        \hfill
+        \insertframenumber/\inserttotalframenumber
+        \hspace{5pt}\vspace{5pt}
+    }
+}{}

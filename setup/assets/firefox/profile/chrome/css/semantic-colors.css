@@ -1,0 +1,63 @@
+@import url(protocol-colors.css);
+
+:root {
+    --primary-fg-light: var(--black);
+    --primary-fg-dark: var(--white);
+    --primary-fg: var(--primary-fg-light);
+
+    --primary-bg-light: var(--white);
+    --primary-bg-dark: var(--dark-gray-50);
+    --primary-bg: var(--primary-bg-light);
+
+    --info-fg-light: var(--primary-fg-light);
+    --info-fg-dark: var(--primary-fg-dark);
+    --info-fg: var(--primary-fg-light);
+
+    --info-bg-light: var(--blue-50);
+    --info-bg-dark: var(--blue-30);
+    --info-bg: var(--primary-bg-light);
+
+    --success-fg-light: var(--primary-fg-light);
+    --success-fg-dark: var(--primary-fg-dark);
+    --success-fg: var(--success-fg-light);
+
+    --success-bg-light: var(--green-50);
+    --success-bg-dark: var(--green-30);
+    --success-bg: var(--success-bg-light);
+
+    --warning-fg-light: var(--primary-fg-light);
+    --warning-fg-dark: var(--primary-fg-dark);
+    --warning-fg: var(--warning-fg-light);
+
+    --warning-bg-light: var(--yellow-50);
+    --warning-bg-dark: var(--yellow-30);
+    --warning-bg: var(--warning-bg-light);
+
+    --critical-fg-light: var(--primary-fg-light);
+    --critical-fg-dark: var(--primary-fg-dark);
+    --critical-fg: var(--critical-fg-light);
+
+    --critical-bg-light: var(--red-50);
+    --critical-bg-dark: var(--red-30);
+    --critical-bg: var(--critical-bg-light);
+}
+
+/* Set colors based on color scheme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-fg: var(--primary-fg-dark);
+        --primary-bg: var(--primary-bg-dark);
+
+        --info-fg: var(--info-fg-dark);
+        --info-bg: var(--info-bg-dark);
+
+        --success-fg: var(--success-fg-dark);
+        --success-bg: var(--success-bg-dark);
+
+        --warning-fg: var(--warning-fg-dark);
+        --warning-bg: var(--warning-bg-dark);
+
+        --critical-fg: var(--critical-fg-dark);
+        --critical-bg: var(--critical-bg-dark);
+    }
+}

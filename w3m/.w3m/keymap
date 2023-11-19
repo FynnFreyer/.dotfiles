@@ -1,0 +1,192 @@
+# big parts taken from http://w3m.rocks/keymap/
+# with slight modifications to some specifics
+# and throwing out what I don't use
+
+# Ctrl    : C-, ^
+# Escape  : ESC-, M-, ^[
+# Space   : SPC, ' '
+# Tab     : TAB, ^i, ^I
+# Delete  : DEL, ^?
+# Up      : UP, ^[[A
+# Down    : DOWN, ^[[B
+# Right   : RIGHT, ^[[C
+# Left    : LEFT, ^[[D
+# the following are wrong, but the 'best guess'
+# Home    : ^[[1~
+# End     : ^[[4~
+# PageUp  : ^[[5~
+# PageDown: ^[[6~
+
+# see https://wiki.bash-hackers.org/scripting/terminalcodes
+
+# can find keycodes with 
+# showkey -a
+# sed -n l
+# xev
+
+# Shift is indicated by capital letters
+# Meta by leading M-
+# Control by leading C-
+# Meta and Control are differentiated
+# but it seems ESC and Meta, and Shift and Meta are not always
+# (which would make sense in the case of ESC, 
+#  given that it produces the same escape sequence?)
+
+keymap ?    HELP
+keymap q    EXIT
+keymap m    MENU
+keymap M-m  MOUSE_TOGGLE
+
+# Navigation
+
+# Jump to next/previous link
+keymap TAB   NEXT_LINK
+keymap M-TAB PREV_LINK
+
+# Scroll screen up/down one line/screen
+keymap h       UP              
+keymap ,       UP
+keymap H       NEXT_PAGE
+keymap ^[[6~   NEXT_PAGE
+
+keymap t       DOWN
+keymap .       DOWN
+keymap T       PREV_PAGE
+keymap ^[[5~   PREV_PAGE
+
+# Scroll screen left/right
+keymap M-h  LEFT
+keymap M-,  LEFT
+keymap M-t  RIGHT
+keymap M-.  RIGHT
+
+# Load previous/next page
+# keymap ^[[1~   PREV
+# keymap M-[H~   PREV
+keymap M-[1~   PREV
+keymap <       PREV
+# keymap LEFT    PREV
+
+# keymap ^[[4~   NEXT
+# keymap M-[F~   NEXT
+# keymap M-[4~  NEXT
+keymap >       NEXT
+# keymap RIGHT   NEXT
+
+# Move cursor once, to start/end of line, by word
+# keymap C-h     LINE_BEGIN
+keymap LEFT    MOVE_LEFT
+# Ctrl-Left
+# keymap ^[[1;5D PREV_WORD
+
+keymap C-f     LINE_END
+keymap RIGHT   MOVE_RIGHT
+# Ctrl-Right
+# keymap ^[[1;5C NEXT_WORD
+
+# First/last link on page
+keymap [    LINK_BEGIN
+keymap ]    LINK_END
+
+# keymap C-a  LINE_BEGIN
+# keymap 0    LINE_BEGIN
+# keymap \^   LINE_BEGIN
+# keymap $    LINE_END
+
+# Undo/redo last movement/jump across the page
+keymap C-z    UNDO
+# keymap C-Z    REDO
+
+keymap c    CENTER_V
+# keymap -C    CENTER_H
+
+# Search
+# Incremental search
+keymap C-r  ISEARCH_BACK
+keymap C-s  ISEARCH
+
+# Regular search
+keymap /    SEARCH
+keymap N    SEARCH_PREV
+keymap n    SEARCH_NEXT
+
+
+# Buffer ops
+
+# Open new URL
+keymap C-l  GOTO
+# keymap C-lr GOTO_RELATIVE
+
+# Save buffer/html
+keymap C-sb   SAVE_SCREEN
+keymap C-s    SAVE
+
+# Browser stuff
+
+# Tabs
+keymap C-q      CLOSE_TAB
+keymap C-w      CLOSE_TAB
+keymap C-t      NEW_TAB
+keymap M-t      TAB_MENU
+
+# Open link in new tab
+keymap C-n    TAB_LINK
+keymap C-N    TAB_LINK
+
+# Reload page
+keymap C-r  RELOAD
+
+# View source
+keymap C-u    VIEW
+
+# Bookmarks
+keymap C-d  ADD_BOOKMARK
+keymap C-b  BOOKMARK
+
+# Link menus to jump to or open a link
+keymap l      MOVE_LIST_MENU
+keymap L      LIST_MENU
+# keymap M-L  LIST
+
+
+# View images externally, save it, or show URL
+keymap I    VIEW_IMAGE
+keymap M-I  SAVE_IMAGE
+keymap i    PEEK_IMG
+
+# Misc
+# Trigger input field submit action
+keymap C-c  SUBMIT
+
+# Browsing history
+keymap C-h  HISTORY
+
+# Options page
+keymap C-o  OPTIONS
+
+# Reload config options
+keymap M-r  REINIT
+
+# Execute/read from/pipe buffer to shell command
+keymap !    SHELL
+keymap @    READ_SHELL
+keymap |    PIPE_BUF
+
+
+# Open current link/buffer in an external browser
+keymap o    EXTERN_LINK
+keymap O    EXTERN
+
+
+# View the key mappings (with w3m descriptions), including the possible unassigned commands
+# keymap E    ACCESSKEY
+
+# Current line #, total lines, cols, etc
+keymap M-i  LINE_INFO
+# page info, including the response HTTP header
+keymap M-I  INFO
+
+# Macros
+# Open search engine, proceed to and select the search box
+keymap M-/ COMMAND  "GOTO https://duckduckgo.com/lite/; NEXT_LINK; GOTO_LINK"
+

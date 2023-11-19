@@ -1,0 +1,6 @@
+defaults:
+  - base.yaml
+metadata-files:
+  - ${.}/../style/yaml/paper.yaml
+include-in-header:
+  - ${.}/../style/tex/paper.tex

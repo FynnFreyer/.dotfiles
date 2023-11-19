@@ -1,0 +1,43 @@
+#!/usr/bin/env xonsh
+import sys, os, logging
+
+$FOREIGN_ALIASES_SUPPRESS_SKIP_MESSAGE = True
+
+# Errors
+XONSH_SHOW_TRACEBACK = False
+#$XONSH_DEBUG = 1
+#$XONSH_STDERR_PREFIX = '{BACKGROUND_RED}'
+#$XONSH_STDERR_POSTFIX = '{RESET}'
+
+def suppress_bash_error():
+    # some weird stuff going on, I deleted the wrong packages
+    if 'BASH_FUNC_module%%' in ${...}:
+        del ${...}['BASH_FUNC_module%%']
+
+bashrc = p'~/.bashrc'.resolve()
+if bashrc.exists():
+    try:
+        source-bash @(bashrc)
+        suppress_bash_error()
+    except Exception as e:
+        logging.log(logging.WARN, 'sourcing bashrc failed', e)
+
+# similar to https://github.com/xonsh/xonsh/issues/4409 I guess
+__import__('warnings').simplefilter('ignore', DeprecationWarning, 118)
+
+conf_dir = p'~/.xonshrc.d'.resolve()
+python_conf = conf_dir / 'python'
+if conf_dir.exists():
+    # if there is a python directory in our conf_dir, then we add it to the path
+    if python_conf.exists() and str(python_conf) not in sys.path:
+        sys.path.insert(0, str(python_conf))
+
+    # we sort the files for sane file precedence
+    for file in sorted(conf_dir.iterdir()):
+        # we are only interested in xonsh files here
+        if file.suffix == '.xsh':
+                try:
+                    source @(file)
+                except Exception as e:
+                    logging.log(logging.WARN, f'sourcing {file} failed', e)
+

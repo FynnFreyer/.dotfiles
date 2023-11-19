@@ -1,0 +1,63 @@
+## Based on the syntax highlighting for Python.
+
+syntax xonsh "\.xsh$"
+header "^#!.*xonsh"
+magic "Xonsh script"
+comment "#"
+
+# Alternative linter: pylint --exit-zero
+# linter pyflakes
+# no linter yet, follow https://github.com/xonsh/xonsh/issues/2420
+
+# Function definitions.
+color brightblue "def [0-9A-Za-z_]+"
+
+# Keywords.
+color brightcyan "\<(and|as|assert|async|await|break|class|continue)\>"
+color brightcyan "\<(def|del|elif|else|except|finally|for|from)\>"
+color brightcyan "\<(global|if|import|in|is|lambda|nonlocal|not|or)\>"
+color brightcyan "\<(pass|raise|return|try|while|with|yield)\>"
+
+# Special values.
+color brightmagenta "\<(False|None|True)\>"
+
+# Mono-quoted strings.
+color brightgreen "'([^'\]|\\.)*'|"([^"\]|\\.)*"|'''|""""
+color normal "'''|""""
+
+# Triple-quoted strings.
+color brightgreen start="'''([^'),]|$)" end="(^|[^(\])'''"
+color brightgreen start=""""([^"),]|$)" end="(^|[^(\])""""
+
+# Backslash escapes.
+color lime "\\($|[\'"abfnrtv]|[0-3]?[0-7]?[0-7]|x[[:xdigit:]]{2})"
+color lime "\\(N\{[[:alpha:]]+\}|u[[:xdigit:]]{4}|U[[:xdigit:]]{8})"
+
+# Reminders.
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
+
+# Trailing whitespace.
+color ,green "[[:space:]]+$"
+
+## Custom stuff
+
+# Decorators
+color latte "^[[:space:]]*@.*$"
+
+# f-Strings (lol, not really)
+# TODO
+
+## Xonsh specifics
+# subprocess commands, won't catch nested stuff
+color italic,green "[$!]\(([^)]|\\.)*\)"
+color italic,green "[$!]\[([^)]|\\.)*\]"
+color italic,green "@[$]?\(([^)]|\\.)*\)"
+
+# no comment char before
+# ^[^#]*
+
+# env vars
+color bold,green "[$][{]?([^([]|\\.)*[ }\n]"
+
+# Comments. Need to go to the end.
+color brightred "(^|[[:blank:]])#.*"

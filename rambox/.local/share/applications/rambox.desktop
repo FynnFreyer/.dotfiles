@@ -1,0 +1,18 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+
+Name=Rambox
+
+Exec=/home/fynn/.local/bin/Rambox.AppImage
+Icon=/home/fynn/.local/share/icons/rambox.png
+Terminal=false
+
+Type=Application
+StartupWMClass=rambox
+StartupNotify=true
+
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=2
+

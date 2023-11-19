@@ -1,0 +1,55 @@
+{
+  "comment": "Installieren nach /etc/thunderbird/policies/policies.json",
+  
+  "policies": {
+    "DownloadDirectory": "${home}/Downloads",
+    "PromptForDownloadLocation": false,
+
+    "Cookies": {
+      "Behavior": "reject",
+      "ExpireAtSessionEnd": true
+    },
+
+    "ExtensionSettings": {
+      "languagetool-mailextension@languagetool.org": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/thunderbird/downloads/latest/grammar-and-spell-checker/latest.xpi"
+      },
+
+      "{e6696d02-466a-11e3-a162-04e36188709b}": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/thunderbird/downloads/latest/eds-calendar-integration/latest.xpi"
+      },
+
+      "uBlock0@raymondhill.net": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/thunderbird/downloads/latest/ublock-origin/latest.xpi"
+      },
+
+      "keepassxc-mail@kkapsner.de": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/keepassxc-mail/latest.xpi"
+      },
+
+      "filtaquilla@mesquilla.com": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/filtaquilla/latest.xpi"
+      },
+
+      "addon@darkreader.org": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/darkreader/latest.xpi"
+      },
+
+      "dkim_verifier@pl": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/dkim-verifier/latest.xpi"
+      },
+
+      "{A23E4120-431F-4753-AE53-5D028C42CFDC}": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/threadvis/latest.xpi"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+/**
+ * Set variables for sidebar widths and margins
+ */
+:root {
+    --sidebery-retracted-width: 40px;
+    --sidebery-extended-width: 33vw;
+
+    /**
+     * We set negative margins for SideBery on hover, so that the page stays static.
+     *
+     * Where we want to apply the negative margin depends on whether the sidebar is on the right, or on the left.
+     * When sidebar displays on the right, it has positionend="true" set, and when on the left it does not.
+     */
+    --sidebery-extended-margin-correction: calc(
+            (var(--sidebery-extended-width)
+            - var(--sidebery-retracted-width)) * -1);
+
+    --transition-duration: 0.1s;
+    --transition-smoothing-function: ease-in-out;
+}
+
+/* Extend sidebar normally, when not using SideBery. */
+#sidebar-box:not([sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"]) {
+    min-width: var(--sidebery-retracted-width) !important;
+    width: var(--sidebery-extended-width);
+    max-width: none !important;
+}
+
+/* Retract sidebar, when using SideBery. */
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] {
+    min-width: var(--sidebery-retracted-width) !important;
+    width: var(--sidebery-retracted-width) !important;
+    max-width: var(--sidebery-retracted-width) !important;
+
+    /* Set explicit z-index, to enable sidebar displaying over app content. */
+    z-index: 1;
+
+    /* Margin zero, instead of auto, suppresses jittering. */
+    margin-left: 0;
+    margin-right: 0;
+
+    /* Fix for sidebar closing on tab drop. */
+    transition: all var(--transition-duration) var(--transition-smoothing-function);
+}
+
+/* Extend sidebar on hover, when using SideBery. */
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"]:hover,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"][extend="true"] {
+    min-width: var(--sidebery-extended-width) !important;
+    width: var(--sidebery-extended-width) !important;
+    max-width: var(--sidebery-extended-width) !important;
+
+    /* Correct right-margin to keep page from being pushed to the side. */
+    margin-right: var(--sidebery-extended-margin-correction);
+    margin-left: 0;
+
+
+    /**
+     * Transparent sidebar, when using extendend.
+     *
+     * Can unfortunately not be selectively overwritten in the SideBery CSS.
+     * Neither can the userChrome.css select for child elements in the Sidebar,
+     * and set opacity on those directly.
+     *
+     * Setting the about:config values gfx.webrender.all and gfx.webrender.enabled set to true
+     * *could* be needed, according to anecdotal evidence, but are not for me.
+     */
+    opacity: 0.8;
+}
+
+/** Clean up unneeded stuff
+ *
+ * Hide native tab bar,
+ * sidebar title, switcher arrow and splitter, when using SideBery.
+ */
+tabs,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] #sidebar-title,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] #sidebar-switcher-arrow,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] #sidebar-spacer,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] #sidebar-throbber,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] #sidebar-close,
+#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] + #sidebar-splitter {
+    visibility: collapse;
+}
+

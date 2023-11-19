@@ -1,0 +1,8 @@
+# espanso docs can be found at: https://espanso.org/docs/
+
+# auto-reload config after a file change is detected
+auto_restart: true
+
+# set correct keyboard layout, because espanso needs hint on wayland
+keyboard_layout:
+  layout: de

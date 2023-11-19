@@ -1,0 +1,11 @@
+---
+toc: true
+toc-depth: 3
+toc-title: Inhalt
+numbersections: true
+
+include-before: |
+  ```{=latex}
+  \newpage{}
+  ```
+---

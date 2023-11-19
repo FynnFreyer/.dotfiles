@@ -1,0 +1,158 @@
+## Include the improved syntax highlighting rules and the xonsh ones
+include "~/.config/nano/improved/*.nanorc"
+include "~/.config/nano/xonsh.nanorc"
+
+## Common keybindings
+
+## C-h for help
+bind ^H help all
+bind ^H exit help
+
+## C-c, C-x, and C-v for copy, cut, and paste
+#bind ^C copy main
+
+#bind ^X cut main
+#unbind ^K main
+
+#bind ^V paste all
+#unbind ^U all
+
+## C-f and C-r for search and replace
+bind ^F whereis all
+unbind ^W all
+
+bind ^R replace main
+unbind ^\ all
+
+## C-s for save
+bind ^S savefile main
+
+bind ^W writeout main
+unbind ^O main
+
+## C-q for quit (without saving)
+#bind ^Q "n" main
+
+## C-q for commenting
+bind ^Q "[1;2H| read mark; printf "# ${mark}"[B" main
+
+## Insert the next character verbatim
+## (good for escape sequences and control characters)
+bind ^V verbatim all
+
+## C-z and C-y for undo/redo
+bind ^Z undo all
+#unbind M-U all
+
+bind ^Y redo all
+unbind M-E all
+
+## M-n and M-N for next/previous occurence
+bind M-N findnext main
+unbind M-Q main
+
+bind Sh-M-N findprevious main
+unbind M-W main
+
+## C-l for linting
+bind ^L linter all
+
+## M-m for centering the screen
+bind M-M center main
+
+#bind ^K "[1;2F|wl-copy"
+#bind ^U "[1;2H|wl-copy"
+
+## C-d to duplicate line, M-d to delete line
+bind ^D "[F[1;2H[1;2D|tee /dev/stdout" main
+bind M-D "[F[1;2H" main
+
+# shift+end, ctrl+t (opens terminal command),
+# if selection is empty print a newline,
+# shift+right, delete
+bind M-K "[1;2F| read mark; if [[ -n ${mark} ]]; then printf '\n\n'; else printf '\n'; fi[A[F[3~[3~" main
+#bind M-K cut main
+
+bind M-U "[1;2H| read mark; if [[ -n ${mark} ]]; then printf '\n'; fi" main
+# bind M-U paste main
+
+## Let an unmodified Backspace or Delete erase the marked region (instead
+## of a single character, and without affecting the cutbuffer).
+set zap
+
+## Save files by default in Unix format (also when they were DOS or Mac).
+set unix
+
+## Enable vim-style lock-files.  This is just to let a vim user know you
+## are editing a file [s]he is trying to edit and vice versa.  There are
+## no plans to implement vim-style undo state in these files.
+set locking
+
+## Do regular-expression searches by default.
+## Regular expressions are of the extended type (ERE).
+set regexp
+
+## Make the Home key smarter: when Home is pressed anywhere but at the
+## very beginning of non-whitespace characters on a line, the cursor
+## will jump to that beginning (either forwards or backwards).  If the
+## cursor is already at that position, it will jump to the true start
+## of the line (the left edge).
+set smarthome
+
+## Make 'nextword' (Ctrl+Right) and 'chopwordright' (Ctrl+Delete)
+## stop at word ends instead of at beginnings.
+set afterends
+
+## Spread overlong lines over multiple screen lines.
+set softwrap
+
+## When soft line wrapping is enabled, make it wrap lines at blanks
+## (tabs and spaces) instead of always at the edge of the screen.
+set atblanks
+
+## Automatically indent a newly created line to the same number of
+## tabs and/or spaces as the preceding line -- or as the next line
+## if the preceding line is the beginning of a paragraph.
+set autoindent
+
+## Use this tab size instead of the default; it must be greater than 0.
+set tabsize 4
+
+## Convert each typed tab to the fitting number of spaces.
+set tabstospaces
+
+## Display line numbers to the left (and any anchors in the margin).
+set linenumbers
+
+## Draw a vertical stripe at the given column, to help judge text width.
+## (This option does not have a default value.)
+set guidestripe 120
+
+## Display a "scrollbar" on the righthand side of the edit window.
+set indicator
+
+## Suppress the title bar and show the filename plus a cursor-position
+## percentage in the space of the status bar.
+set minibar
+
+## Paint the status bar.
+set titlecolor bold,white,green
+
+## Don't display the helpful shortcut lists at the bottom of the screen.
+set nohelp
+
+## Use the end of the title bar for some state flags: I = auto-indenting,
+## M = mark, L = hard-wrapping long lines, R = recording, S = soft-wrapping.
+set stateflags
+
+## Constantly display the cursor position in the status bar or minibar.
+set constantshow
+
+## Make status-bar messages disappear after 1 keystroke instead of after 20.
+set quickblank
+
+## Remember the cursor position in each file for the next editing session.
+set positionlog
+
+## Remember the used search/replace strings for the next session.
+set historylog

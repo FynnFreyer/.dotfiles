@@ -1,0 +1,84 @@
+# LaTeX stuff
+#
+# Loosely based on Ivan Bue's (@soulllink) work.
+# Cf. https://hub.espanso.org/common-latex
+
+matches:
+  - regex: ':(?P<format>bb|bf|rm|it|normal|cal|scr|frak)'
+    replace: '\math{{format}}{$|$}'
+    label: 'Rule for various LaTeX formattings (bb|rm|it|normal|cal|scr|frak)'
+    force_clipboard: true
+  - regex: ':in(?P<format>bb|rm|it|normal|cal|scr|frak)'
+    replace: '\in \math{{format}}{$|$}'
+    label: 'Rule for \in <formatting>{}'
+    force_clipboard: true
+  - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
+    replace: '{{left}} \times {{right}}'
+    label: 'Rule for \times, like n x m'
+    force_clipboard: true
+  - trigger: ':fr'
+    replace: '\frac{$|$}{}'
+    label: 'Rule for fractions'
+    force_clipboard: true
+  - trigger: ':qd'
+    replace: '\left[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\right]'
+    force_clipboard: true
+  - trigger: ':sq'
+    replace: '\sqrt{$|$}'
+    force_clipboard: true
+  - trigger: ':log'
+    replace: '\log_{$|$}'
+    force_clipboard: true
+  - trigger: ':lim'
+    replace: '\limits_{i = 1$|$}^{n}'
+    force_clipboard: true
+  - trigger: ':sum'
+    replace: '\sum{{limits}}'
+    force_clipboard: true
+    vars:
+      - name: limits
+        type: match
+        params:
+          trigger: ':lim'
+  - trigger: ':vec'
+    replace: '\vec{$|$}'
+    force_clipboard: true
+  - trigger: ':mat'
+    replace: |-
+        \begin{bmatrix}
+        a_{11} & a_{12} & a_{13} \\
+        a_{21} & a_{22} & a_{23} \\
+        a_{31} & a_{32} & a_{33}
+        \end{bmatrix}
+    force_clipboard: true
+  - trigger: ':det'
+    replace: |-
+        \begin{vmatrix}
+        a_{11} & a_{12} & a_{13} \\
+        a_{21} & a_{22} & a_{23} \\
+        a_{31} & a_{32} & a_{33}
+        \end{vmatrix}
+    force_clipboard: true
+    vars:
+      - name: mat
+        type: match
+        params:
+          trigger: ':mat'
+  - trigger: ':cup'
+    replace: '\bigcup_{i}^{n} A_i'
+    force_clipboard: true
+  - trigger: ':cap'
+    replace: '\bigcap_{i}^{n} A_i'
+    force_clipboard: true
+
+  # - trigger: ':inrmn'
+  #   replace: '\\in \\mathbb{R}^{m \times n}'
+  # - trigger: ':inN'
+  #   replace: '\\in \\mathbb{N}'
+  # - trigger: ':inn2'
+  #   replace: '\\in \\mathbb{N}^{2}'
+  #   debug: true
+  # - trigger: ':inn3'
+  #   replace: '\\in \\mathbb{N}^{3}'
+  # - trigger: ':innmn'
+  #   replace: '\\in \\mathbb{N}^{m \times n}'

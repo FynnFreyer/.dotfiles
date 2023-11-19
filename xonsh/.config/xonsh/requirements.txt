@@ -1,0 +1,10 @@
+xontrib-vox
+xontrib-init-ssh-agent
+xonsh-direnv
+xontrib-makefile-complete
+xontrib-kitty
+xontrib-argcomplete
+PyYAML
+requests
+numpy
+pandas

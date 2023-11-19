@@ -1,0 +1,36 @@
+matches:
+  - trigger: ':sgf'
+    force_clipboard: true
+    replace: Sehr geehrte Frau
+
+  - trigger: ':sgh'
+    force_clipboard: true
+    replace: Sehr geehrter Herr
+
+  - trigger: ':sgdh'
+    force_clipboard: true
+    replace: Sehr geehrte Damen und Herren,\n\n
+
+  - trigger: ':lg'
+    force_clipboard: true
+    replace: |
+        Liebe Grüße
+        Fynn
+
+  - trigger: ':mfg'
+    force_clipboard: true
+    replace: |
+        Mit freundlichen Grüßen
+        Fynn Freyer
+
+  - trigger: ':kr'
+    force_clipboard: true
+    replace: |
+        Kind regards,
+        Fynn Freyer
+
+  - trigger: ':best'
+    force_clipboard: true
+    replace: |
+        Best regards,
+        Fynn

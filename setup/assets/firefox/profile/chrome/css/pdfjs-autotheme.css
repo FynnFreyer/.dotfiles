@@ -1,0 +1,26 @@
+@import url(protocol-colors.css);
+
+/**
+ * This is currently not working, due to a bug in PDF.js
+ * See https://github.com/mozilla/pdf.js/issues/17057
+ */
+
+:root {
+    --pdfjs-bg: var(--light-gray-30);
+    --filter: grayscale(0) invert(0) sepia(0) contrast(100%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --pdfjs-bg: var(--dark-gray-30);
+        --filter: grayscale(1) invert(1) sepia(1) contrast(75%);
+    }
+}
+
+div#viewer.pdfViewer {
+    background-color: var(--pdfjs-bg);
+}
+
+div#viewer.pdfViewer div.page {
+    filter: var(--filter);
+}

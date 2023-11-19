@@ -1,0 +1,6 @@
+[submodule "nano/.config/nano/improved"]
+	path = nano/.config/nano/improved
+	url = https://github.com/scopatz/nanorc
+[submodule "tmux/.config/tmux/plugins/tpm"]
+	path = tmux/.config/tmux/plugins/tpm
+	url = https://github.com/tmux-plugins/tpm.git

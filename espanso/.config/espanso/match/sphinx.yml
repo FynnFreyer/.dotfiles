@@ -1,0 +1,13 @@
+matches:
+  - trigger: ':cl'
+    force_clipboard: true
+    replace: ':class:`$|$`'
+
+  - trigger: ':me'
+    force_clipboard: true
+    replace: ':meth:`$|$`'
+
+  - trigger: ':at'
+    force_clipboard: true
+    replace: ':attr:`$|$`'
+

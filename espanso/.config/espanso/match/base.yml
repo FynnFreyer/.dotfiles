@@ -1,29 +1,27 @@
 # espanso docs can be found at: https://espanso.org/docs/
 
-# Matches are substitution rules: when you type the 'trigger' string
-# it gets replaced by the 'replace' string.
 matches:
-  # Print the current date
-  - trigger: ':date'  # '%d.%m.%Y'
+  - trigger: ':date'
     replace: '{{today}}'
+    label:  German date formatting.
     vars:
       - name: today
         type: date
         params:
           format: '%d.%m.%Y'
 
-  - trigger: ':iso-'  # '%Y-%m-%d'
+  - trigger: ':iso-'
     replace: '{{today}}'
-    label: '%Y-%m-%d'
+    label: ISO date (using '%Y-%m-%d').
     vars:
       - name: today
         type: date
         params:
           format: '%Y-%m-%d'
 
-  - trigger: ':iso_'  # '%Y%m%d_'
+  - trigger: ':iso_'
     replace: '{{today}}'
-    label: '%y%m%d_'
+    label: Date for file tagging (using '%y%m%d_').
     vars:
       - name: today
         type: date

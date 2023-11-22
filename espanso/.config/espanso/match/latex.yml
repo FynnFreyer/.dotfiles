@@ -3,82 +3,151 @@
 # Loosely based on Ivan Bue's (@soulllink) work.
 # Cf. https://hub.espanso.org/common-latex
 
+# some programs insert matching parens/brackets/braces,
+# so force_clipboard is used in cases where that's a problem
+
+global_vars:
+  # not so useful rn, but maybe later
+  # see: https://github.com/espanso/espanso/discussions/1753
+  - name: content
+    type: echo
+    params:
+      echo: $|$
+
 matches:
   - regex: ':(?P<format>bb|bf|rm|it|normal|cal|scr|frak)'
-    replace: '\math{{format}}{$|$}'
-    label: 'Rule for various LaTeX formattings (bb|rm|it|normal|cal|scr|frak)'
-    force_clipboard: true
+    replace: '\math{{format}}{{{content}}}'
+    label: 'Use various LaTeX math formattings. (bb|rm|it|normal|cal|scr|frak)'
+
   - regex: ':in(?P<format>bb|rm|it|normal|cal|scr|frak)'
-    replace: '\in \math{{format}}{$|$}'
-    label: 'Rule for \in <formatting>{}'
-    force_clipboard: true
+    replace: '\in \math{{format}}{{{content}}}'
+    label: 'Member of a Set with formatted name. Like "\in \math(bb|rm|...){}"'
+
   - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
     replace: '{{left}} \times {{right}}'
-    label: 'Rule for \times, like n x m'
-    force_clipboard: true
-  - trigger: ':fr'
-    replace: '\frac{$|$}{}'
-    label: 'Rule for fractions'
-    force_clipboard: true
-  - trigger: ':qd'
-    replace: '\left[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\right]'
-    force_clipboard: true
-  - trigger: ':sq'
-    replace: '\sqrt{$|$}'
-    force_clipboard: true
-  - trigger: ':log'
-    replace: '\log_{$|$}'
-    force_clipboard: true
-  - trigger: ':lim'
-    replace: '\limits_{i = 1$|$}^{n}'
-    force_clipboard: true
-  - trigger: ':sum'
-    replace: '\sum{{limits}}'
-    force_clipboard: true
-    vars:
-      - name: limits
-        type: match
-        params:
-          trigger: ':lim'
-  - trigger: ':vec'
-    replace: '\vec{$|$}'
-    force_clipboard: true
-  - trigger: ':mat'
-    replace: |-
-        \begin{bmatrix}
-        a_{11} & a_{12} & a_{13} \\
-        a_{21} & a_{22} & a_{23} \\
-        a_{31} & a_{32} & a_{33}
-        \end{bmatrix}
-    force_clipboard: true
-  - trigger: ':det'
-    replace: |-
-        \begin{vmatrix}
-        a_{11} & a_{12} & a_{13} \\
-        a_{21} & a_{22} & a_{23} \\
-        a_{31} & a_{32} & a_{33}
-        \end{vmatrix}
-    force_clipboard: true
-    vars:
-      - name: mat
-        type: match
-        params:
-          trigger: ':mat'
-  - trigger: ':cup'
-    replace: '\bigcup_{i}^{n} A_i'
-    force_clipboard: true
-  - trigger: ':cap'
-    replace: '\bigcap_{i}^{n} A_i'
-    force_clipboard: true
+    label: 'Rule for cross products, like "n \times m"'
 
-  # - trigger: ':inrmn'
-  #   replace: '\\in \\mathbb{R}^{m \times n}'
-  # - trigger: ':inN'
-  #   replace: '\\in \\mathbb{N}'
-  # - trigger: ':inn2'
-  #   replace: '\\in \\mathbb{N}^{2}'
-  #   debug: true
-  # - trigger: ':inn3'
-  #   replace: '\\in \\mathbb{N}^{3}'
-  # - trigger: ':innmn'
-  #   replace: '\\in \\mathbb{N}^{m \times n}'
+  - trigger: ':to'
+    force_clipboard: true  # needed for caret (^)
+    replace: '^{$|$}'
+    label: 'Rule for cross products, like "n \times m"'
+
+  - trigger: ':pq'
+    force_clipboard: true  # needed for caret (^)
+    replace: >
+      {{values.var}}_0, {{values.var}}_1 = 
+      - \frac{{{values.p}}}{{{values.q}}} 
+      \pm 
+      \sqrt{\left(\frac{{{values.p}}}{2}\right)^2 - {{values.q}}}
+    vars:
+      - name: values
+        type: form
+        params:
+          layout: "p: [[p]]\nq: [[q]]\nlooking for: [[var]]"
+          fields:
+            var:
+              default: x
+            p:
+              default: p
+            q:
+              default: q
+
+  - trigger: ':lrp'
+    label: Left and right scaled parens.
+    replace: '\left( {{content}} \right)'
+
+  - trigger: ':lrb'
+    label: Left and right scaled brackets.
+    replace: '\left[ {{content}} \right]'
+
+  - regex: ':lr(?P<left_sign>[(\[{|])(?P<right_sign>[)\]}|])'
+    replace: '\left{{left_sign}} {{content}} \right{{right_sign}}'
+    label: Arbitrary left and right scaled symbols.
+
+  - trigger: ':fr'
+    replace: '\frac{{{content}}}{}'
+
+  - trigger: ':sq'
+    label: A square root.
+    replace: '\sqrt{{{content}}}'
+
+  - trigger: ':log'
+    label: A logarithm.
+    replace: '\log_{{{content}}}'
+
+  - trigger: ':lim'
+    label: Limit of a function.
+    force_clipboard: true  # needed for caret (^)
+    replace: '\lim\limits_{x \to $|$\infty}'
+
+  - trigger: ':sum'
+    label: A sum with limits.
+    force_clipboard: true  # needed for caret (^)
+    replace: '\sum_{i = 1$|$}^{n}'
+
+  - trigger: ':vec'
+    label: A vector arrow.
+    replace: '\vec{$|$}'
+
+  - trigger: ':cup'
+    label: Union of sets.
+    force_clipboard: true  # needed for caret (^)
+    replace: '\bigcup_{i = 1$|$}^{n} A_i'
+
+  - trigger: ':cap'
+    label: Intersection of sets.
+    force_clipboard: true  # needed for caret (^)
+    replace: '\bigcap_{i = 1$|$}^{n} A_i'
+
+  - trigger: ':disp'
+    label: Enter the displaylines env. Useful for MathJax.
+    force_clipboard: true  # needed to avoid duplicate braces
+    replace: |
+      \displaylines{
+      $|$
+      }
+
+  - trigger: ':tex'
+    label: A text field.
+    replace: '\text{{{content}}}'
+
+  - trigger: ':eq'
+    label: Enter the equation environment.
+    replace: |
+      \begin{equation}
+          {{content}}
+      \end{equation}
+
+  - regex: ':(?P<count>\d?)(?P<type>[d]?)cases'
+    label: Enter the cases environment for functions.
+    force_clipboard: true  # needed to avoid stacking indent
+    replace: |
+      \begin{{{type}}cases}
+          {{cases}}
+      \end{{{type}}cases}
+    vars:
+      - name: cases
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/cases.py'
+            - '{{count}}'
+
+  - regex: ':(?P<type>[pbv])mat(?P<rows>\d+)x(?P<cols>\d+)'
+    label: Generate an M by N matrix of a certain type (p|b|v).
+    force_clipboard: true  # needed to avoid stacking indent
+    replace: |-
+        \begin{{{type}}matrix}
+            {{matrix}}
+        \end{{{type}}matrix}
+    vars:
+      - name: matrix
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/matrix.py'
+            - '{{rows}}'
+            - '{{cols}}'
+

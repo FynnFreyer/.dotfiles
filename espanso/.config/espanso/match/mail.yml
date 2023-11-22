@@ -1,21 +1,64 @@
-matches:
-  - trigger: ':sgf'
-    force_clipboard: true
-    replace: Sehr geehrte Frau
+# Thunderbird sometimes is a little weird about inserting
+# so force_clipboard is set to true to work around that
 
+matches:
   - trigger: ':sgh'
     force_clipboard: true
-    replace: Sehr geehrter Herr
+    replace: 'Sehr geehrter Herr '
+    
+  - trigger: ':sgf'
+    force_clipboard: true
+    replace: 'Sehr geehrte Frau '
+
+  - trigger: ':pd'
+    force_clipboard: true
+    replace: 'Prof. Dr. '
 
   - trigger: ':sgdh'
     force_clipboard: true
-    replace: Sehr geehrte Damen und Herren,\n\n
+    replace: "Sehr geehrte Damen und Herren,\n\n"
 
   - trigger: ':lg'
     force_clipboard: true
     replace: |
         Liebe Grüße
         Fynn
+
+  - trigger: ':mail'
+    force_clipboard: true
+    form: |
+      [[hello]][[title]][[name]],
+      
+      $|$
+      
+      [[signature]]
+    form_fields:
+      hello:
+        type: choice
+        default: 'Hey'
+        values:
+          - 'Hey'
+          - 'Sehr geehrter Herr'
+          - 'Sehr geehrte Frau'
+          - 'Sehr geehrte Damen und Herren'
+          - 'Hallo'
+      title:
+        type: choice
+        default: ' '
+        values:
+          - ' '
+          - ' Prof. Dr. '
+          - ' Prof. '
+          - ' Dr. '
+      name:
+        type: text
+        default: ''
+      signature:
+        type: choice
+        default: "Liebe Grüße\nFynn"
+        values:
+          - "Liebe Grüße\nFynn"
+          - "Mit freundlichen Grüßen\nFynn Freyer"
 
   - trigger: ':mfg'
     force_clipboard: true
@@ -34,3 +77,4 @@ matches:
     replace: |
         Best regards,
         Fynn
+

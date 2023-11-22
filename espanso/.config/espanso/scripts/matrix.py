@@ -20,7 +20,7 @@ def generate_rows(row_count, col_count, var, index, cursor):
     for i in range(row_count):
         row = []
         for j in range(col_count):
-            cell = f'{var}_{{{i}, {j}}}' if index else var
+            cell = f'{var}_{{{i+1}, {j+1}}}' if index else var
             row.append(cell)
         rows.append(row)
 

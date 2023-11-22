@@ -156,7 +156,7 @@ get_opts() {
 
 setup_tun() {
     # see whether a device tun1 is setup already
-    tun_setup=$(ip tuntap list | grep "${DEVICE}:")
+    tun_setup=$(ip tuntap list | grep "${DEVICE}:" || true)
     if [[ -z "$tun_setup" ]]; then  # no tun device setup
         $VERBOSE && echo "Creating new tun device ${DEVICE}"
         $VERBOSE && sudo ip tuntap add dev "${DEVICE}" mode tun \

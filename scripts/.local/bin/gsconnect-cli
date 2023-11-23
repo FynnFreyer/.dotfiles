@@ -27,7 +27,7 @@ else:
 
 logger.info("found executable", str(executable))
 
-cmd = [cmd, *sys.argv[1:]]
+cmd = [executable, *sys.argv[1:]]
 cmd_repr = fmt_cmd(cmd)
 
 logger.info("running command", cmd_repr)
@@ -40,4 +40,3 @@ except CalledProcessError as e:
     help = run([cmd, '-h'], text=True).stdout
     print(help)
     exit(1)
-

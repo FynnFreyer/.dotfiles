@@ -1,4 +1,4 @@
-#!/usr/bin/env/bash
+#!/usr/bin/env bash
 
 # install deps
 sudo dnf install @development-tools gcc-c++ wl-clipboard libxkbcommon-devel dbus-devel wxGTK3-devel
@@ -17,6 +17,3 @@ cargo make --profile release --env NO_X11=true build-binary
 sudo mv target/release/espanso /usr/local/bin/espanso
 sudo setcap "cap_dac_override+p" $(which espanso)
 espanso service register
-
-# for espanso to work properly, the config needs to set the keyboard layout
-

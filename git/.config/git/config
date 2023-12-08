@@ -26,15 +26,3 @@
 [status]
     relativePaths = false
     branch = true
-[safe]
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .
-	directory = .

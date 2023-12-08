@@ -21,16 +21,31 @@ matches:
 
   - regex: ':in(?P<format>bb|rm|it|normal|cal|scr|frak)'
     replace: '\in \math{{format}}{{{content}}}'
-    label: 'Member of a Set with formatted name. Like "\in \math(bb|rm|...){}"'
+    label: 'Member of a Set with formatted name. Like "\in \math(bb|rm|...){}".'
 
   - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
     replace: '{{left}} \times {{right}}'
-    label: 'Rule for cross products, like "n \times m"'
+    label: 'Rule for cross products, like "n \times m".'
 
   - trigger: ':to'
     force_clipboard: true  # needed for caret (^)
-    replace: '^{$|$}'
-    label: 'Rule for cross products, like "n \times m"'
+    replace: '^{{{content}}}'
+    label: 'To the power.'
+
+  - trigger: ':inv'
+    force_clipboard: true  # needed for caret (^)
+    replace: '^{-1}'
+    label: 'The inverse of.'
+
+  - trigger: ':trans'
+    force_clipboard: true  # needed for caret (^)
+    replace: '^{\top}'
+    label: 'The transpose of.'
+
+  - trigger: ':idx'
+    force_clipboard: true  # needed for caret (^)
+    replace: '_{{{content}}}'
+    label: 'The index of.'
 
   - trigger: ':pq'
     force_clipboard: true  # needed for caret (^)
@@ -60,6 +75,18 @@ matches:
     label: Left and right scaled brackets.
     replace: '\left[ {{content}} \right]'
 
+  - trigger: ':floor'
+    label: Floor function, rounds down.
+    replace: '\lfloor {{content}} \rfloor'
+
+  - trigger: ':ceil'
+    label: Ceiling function, rounds up.
+    replace: '\lceil {{content}} \rceil'
+
+  - trigger: ':angle'
+    label: Angles. E.g., for inner products.
+    replace: '\langle {{content}} \rangle'
+
   - regex: ':lr(?P<left_sign>[(\[{|])(?P<right_sign>[)\]}|])'
     replace: '\left{{left_sign}} {{content}} \right{{right_sign}}'
     label: Arbitrary left and right scaled symbols.
@@ -85,10 +112,6 @@ matches:
     force_clipboard: true  # needed for caret (^)
     replace: '\sum_{i = 1$|$}^{n}'
 
-  - trigger: ':vec'
-    label: A vector arrow.
-    replace: '\vec{$|$}'
-
   - trigger: ':cup'
     label: Union of sets.
     force_clipboard: true  # needed for caret (^)
@@ -104,7 +127,7 @@ matches:
     force_clipboard: true  # needed to avoid duplicate braces
     replace: |
       \displaylines{
-      $|$
+      {{content}}
       }
 
   - trigger: ':tex'
@@ -134,8 +157,17 @@ matches:
             - '%CONFIG%/scripts/cases.py'
             - '{{count}}'
 
-  - regex: ':(?P<type>[pbv])mat(?P<rows>\d+)x(?P<cols>\d+)'
-    label: Generate an M by N matrix of a certain type (p|b|v).
+  - regex: ':env(?P<environ>[a-z]+)[^a-z]'
+    force_clipboard: true  # needed to avoid duplicate braces
+    label: Enter an arbitrary environment.
+    replace: |
+      \begin{{{environ}}}
+          {{content}}
+      \end{{{environ}}}
+
+  # see types of matrices here: https://www.overleaf.com/learn/latex/Matrices
+  - regex: ':(?P<type>[pbBvV]?)mat(?P<rows>\d+)x(?P<cols>\d+)[^\d]'
+    label: Generate an M by N matrix of a certain type (p|b|B|v|V).
     force_clipboard: true  # needed to avoid stacking indent
     replace: |-
         \begin{{{type}}matrix}
@@ -150,4 +182,38 @@ matches:
             - '%CONFIG%/scripts/matrix.py'
             - '{{rows}}'
             - '{{cols}}'
+
+  - regex: ':smat(?P<rows>\d+)x(?P<cols>\d+)[^\d]'
+    label: Generate a small M by N matrix for inline display.
+    replace: '\left(\begin{smallmatrix} {{matrix}} \end{smallmatrix}\right)'
+    vars:
+      - name: matrix
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/matrix.py'
+            - '--inline'
+            - '--unindented'
+            - '{{rows}}'
+            - '{{cols}}'
+
+  - regex: ':vec(?P<symbol>[a-zA-Z])'
+    label: A vector arrow over a symbol.
+    replace: '\vec{{{symbol}}}'
+
+  - regex: ':(?P<type>[pbBvV]?)vec(?P<dim>\d+)[^\d]'
+    label: A vector.
+    replace: '\begin{{{type}}matrix} {{vec}} \end{{{type}}matrix}'
+    vars:
+      - name: vec
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/matrix.py'
+            - '--inline'
+            - '--unindented'
+            - '{{dim}}'
+            - '1'
 

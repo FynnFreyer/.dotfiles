@@ -16,12 +16,15 @@ cleanup() {
 
     set +eEuo pipefail  # make bash act normal after exit
 
-    teardown_tun # ensure connection cleanup
-    if [[ -n ${PW_PIPE:+x} ]]; then  # if a fifo was created
-        rm -f $PW_PIPE  # ensure cleanup
-    fi
-    $VERBOSE && echo "Bye!"
-
+    # no cleanup needed if we just print a help message
+	if ! $HELP; then
+	    teardown_tun # ensure connection cleanup
+	    if [[ -n ${PW_PIPE:+x} ]]; then  # if a fifo was created
+	        rm -f $PW_PIPE  # ensure cleanup
+	    fi
+	    $VERBOSE && echo "Bye!"
+	fi
+	
     # set +xv  # uncomment for debugging
 
     exit $ret_code
@@ -33,6 +36,9 @@ SCRIPT_DIR=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
 # set defaults
 VERBOSE=true
 
+# whether we exited with help message
+HELP=false
+
 URL=vpncl.htw-berlin.de
 AUTH_GROUP=HTW-SSL-VPN-Split  # only tunnel relevant traffic by default
 
@@ -43,6 +49,8 @@ DEVICE=tun1
 
 # define help message
 usage() {
+    HELP=true  # mark that we're in help, so no cleanup is porformed
+
     local prog=$(basename "${0}")
     local indent_length="${#prog}"
     local indent=$(printf "%${indent_length}s")
@@ -76,8 +84,8 @@ OPTIONS
     Profile Options
 
         -s, --split    Only tunnel connections to HTW domains. (Default)
-        -f, --full     Tunnel all connections through the HTW network.
-        -c, --full-cl  Needed for some services outside the HTW network.
+        -f, --full     Tunnel all connections through the HTW network. This is
+                       necessary for some services outside the HTW network.
         -m, --man      Use the management profile to connect to the HTW network.
 
     Login Options
@@ -116,9 +124,6 @@ get_opts() {
                 ;;
             -f|--full)
                 AUTH_GROUP=HTW-SSL-VPN-Full
-                ;;
-            -c|--full-cl)
-                AUTH_GROUP=HTW-SSL-VPNCL-Full
                 ;;
             -m|--man)
                 URL="${URL}/man"  # different URL for management access

@@ -11,32 +11,39 @@ logger = logging.getLogger(__name__)
 def fmt_cmd(args: list):
     " ".join([str(arg) for arg in args])
 
-location = "share/gnome-shell/extensions/gsconnect@andyholmes.github.io/service/daemon.js"
-user_install = Path.home() / f"/.local/{location}"
-system_install = Path(f"/usr/{location}")
 
-# [line.split() for line in $(gsconnect-cli -a).splitlines()]
+def find_executable():
+    location = "share/gnome-shell/extensions/gsconnect@andyholmes.github.io/service/daemon.js"
+    user_install = Path.home() / f"/.local/{location}"
+    system_install = Path(f"/usr/{location}")
 
-if user_install.exists():
-    executable = user_install
-elif system_install.exists():
-    executable = system_install
-else:
-    logger.warning("gsconnect not found")
-    exit(1)
+    if user_install.exists():
+        executable = user_install
+    elif system_install.exists():
+        executable = system_install
+    else:
+        # logger.error("gsconnect not found")
+        exit("gsconnect not found")
 
-logger.info("found executable", str(executable))
+    logger.info("found executable", str(executable))
+    return executable
 
-cmd = [executable, *sys.argv[1:]]
-cmd_repr = fmt_cmd(cmd)
 
-logger.info("running command", cmd_repr)
+def run_cmd(executable):
+    cmd = [(executable), *sys.argv[1:]]
+    cmd_repr = fmt_cmd(cmd)
 
-try:
-    proc = run(cmd, text=True, check=True)
-except CalledProcessError as e:
-    logger.warning(f"{cmd_repr} failed with error")
-    logger.warning(e)
-    help = run([cmd, '-h'], text=True).stdout
-    print(help)
-    exit(1)
+    logger.info("running command", cmd_repr)
+
+    try:
+        proc = run(cmd, text=True, check=True)
+    except CalledProcessError as e:
+        logger.warning(f"{cmd_repr} failed with error")
+        logger.warning(e)
+        help_text = run([executable, '-h'], capture_output=True, text=True).stdout
+        print(help_text)
+        exit(1)
+
+if __name__ == '__main__':
+    exe = find_executable()
+    run_cmd(exe)

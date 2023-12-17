@@ -1,5 +1,3 @@
-defaults:
-  - base.yaml
 metadata-files:
   - ${.}/../style/yaml/slides.yaml
 include-in-header:

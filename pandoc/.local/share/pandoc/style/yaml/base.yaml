@@ -1,4 +1,5 @@
 ---
+lang: de-DE
 geometry:
   - paper=a4paper
   - margin=2.5cm

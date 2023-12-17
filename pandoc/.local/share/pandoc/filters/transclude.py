@@ -13,10 +13,10 @@
 
 """
 Pandoc filter to extend image syntax with transclusion. Images that don't have
-a mimetype starting with
-replace their content with the included file.
+a mimetype starting with ``image/`` replace their content with the included file.
 
-This needs `pandoc` to be available in the PATH.
+This needs `pandoc` to be available in the PATH and only works with absolute links
+and those relative to the current working directory.
 """
 
 import sys

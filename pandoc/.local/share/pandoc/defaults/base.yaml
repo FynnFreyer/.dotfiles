@@ -26,9 +26,9 @@ include-in-header:
   - ${.}/../style/tex/base.tex
 
 filters:
+  - ${.}/../filters/transclude.lua
   - ${.}/../filters/plantuml.py
   - ${.}/../filters/mermaid.py
-  # - ${.}/../filters/transclude.py
 
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl

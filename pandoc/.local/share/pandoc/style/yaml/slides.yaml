@@ -1,20 +1,13 @@
 ---
-lang: de-DE
-
 aspectratio: 169
 theme: default
 colortheme: dove
 navigation: frame
 
-fontfamily: roboto
-fontfamilyoptions: sfdefault
+# reset these base settings
+geometry:
+  - paper=
+  - margin=
+
 fontsize: 14pt
-linestretch: 1.2
-
-hyperrefoptions:
-  - linktoc=all
-  - pdfwindowui
-
-urlcolor: blue
-linkcolor: darkgray
 ---

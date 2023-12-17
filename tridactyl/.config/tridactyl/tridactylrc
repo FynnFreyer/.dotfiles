@@ -33,10 +33,10 @@ bind <A-N> followpage prev
 " if I want to open something I press Ctrl-l
 unbind o O
 
-bind u scrollpx 50
-bind U scrollline 10
-bind e scrollpx -50
-bind E scrollline -10
+bind u scrollline 3
+bind U scrollpage 1
+bind e scrollline -3
+bind E scrollpage -1
 
 " leave my sidebery keybinds alone
 unbind --mode=browser <C-e> <C-.> <C-,>

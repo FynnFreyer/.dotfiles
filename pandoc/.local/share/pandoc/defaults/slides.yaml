@@ -1,3 +1,4 @@
+from: markdown+fenced_divs
 to: beamer
 
 defaults:

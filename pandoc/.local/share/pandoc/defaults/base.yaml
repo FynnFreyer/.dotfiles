@@ -9,6 +9,8 @@ resource-path:
   - ./images
   - ./assets
   - ${.}
+  - ${.}/..
+  - ${.}/../assets
   - ${.}/../filters
   - ${.}/../style
   - ${.}/../style/citations

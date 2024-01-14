@@ -7,5 +7,6 @@ auto_restart: true
 keyboard_layout:
   layout: de
 
-search_trigger: ":search"
+search_shortcut: CTRL+SHIFT+SPACE
+search_trigger: ":help"
 

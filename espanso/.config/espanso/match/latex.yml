@@ -135,14 +135,17 @@ matches:
     replace: '\text{{{content}}}'
 
   - trigger: ':eq'
-    label: Enter the equation environment.
+    label: Enter the equation and split environments. Split allows for alignment with "&".
+    force_clipboard: true  # needed to avoid stacking indent
     replace: |
       \begin{equation}
-          {{content}}
+          \begin{split}
+              {{content}}
+          \end{split}
       \end{equation}
 
   - regex: ':(?P<count>\d?)(?P<type>[d]?)cases'
-    label: Enter the cases environment for functions.
+    label: Enter the cases environment for functions that return stuff based on conditions.
     force_clipboard: true  # needed to avoid stacking indent
     replace: |
       \begin{{{type}}cases}
@@ -167,7 +170,7 @@ matches:
 
   # see types of matrices here: https://www.overleaf.com/learn/latex/Matrices
   - regex: ':(?P<type>[pbBvV]?)mat(?P<rows>\d+)x(?P<cols>\d+)[^\d]'
-    label: Generate an M by N matrix of a certain type (p|b|B|v|V).
+    label: Generate an M by N matrix of a certain type (p|b|B|v|V). Use like so :<type>mat<rows>x<cols>.
     force_clipboard: true  # needed to avoid stacking indent
     replace: |-
         \begin{{{type}}matrix}
@@ -216,4 +219,20 @@ matches:
             - '--unindented'
             - '{{dim}}'
             - '1'
+
+  - regex: ':horner(?P<degree>\d+)(?:-(?P<root>[\\\da-zA-Z_]+))?[^\d-]'
+    label: |-
+        Generate a template to do polynome division via Horner's scheme.
+        Use like so :horner<degree>(-<root>).
+        Degree is an integer and root is optional and can be any string without hyphen.
+    force_clipboard: true  # needed to avoid stacking indent
+    replace: "{{horner}}"
+    vars:
+      - name: horner
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/horner.py'
+            - '{{degree}}'
 

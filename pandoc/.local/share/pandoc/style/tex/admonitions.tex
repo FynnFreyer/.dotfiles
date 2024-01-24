@@ -1,9 +1,0 @@
-% make quotes look like admonitions
-\AtBeginEnvironment{quote}{
-    \par\scshape
-    \begin{tcolorbox}[
-        beforeafter skip balanced=30pt, leftright skip=30pt,
-        top=10pt, bottom=10pt, left=10pt, right=10pt
-    ]
-}
-\AtEndEnvironment{quote}{\end{tcolorbox}}

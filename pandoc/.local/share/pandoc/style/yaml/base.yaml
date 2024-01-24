@@ -15,4 +15,10 @@ hyperrefoptions:
 
 urlcolor: blue
 linkcolor: darkgray
+
+pandoc-latex-environment:
+  tcolorbox: [box]
+  info-box: [info]
+  warning-box: [warning]
+  error-box: [error]
 ---

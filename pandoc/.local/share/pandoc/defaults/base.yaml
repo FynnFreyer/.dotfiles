@@ -31,6 +31,8 @@ filters:
   - ${.}/../filters/transclude.lua
   - ${.}/../filters/plantuml.py
   - ${.}/../filters/mermaid.py
+  # TODO: should this be vendored in? requires pipx install otherwise
+  - pandoc-latex-environment
 
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl

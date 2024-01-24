@@ -1,5 +1,0 @@
-defaults:
-  - slides.yaml
-include-in-header:
-  - ${.}/../style/tex/slides-htw.tex
-

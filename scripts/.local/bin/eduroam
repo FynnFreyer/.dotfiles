@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+
+set -eEuo pipefail  # make bash reasonably strict
+
+# set defaults
+VERBOSE=true  # TODO use this: https://stackoverflow.com/a/8756552/5994623
+P12_CERT=
+DEVICE=
+passphrase=$(openssl rand -base64 32)
+
+base="$HOME/.cert/nm-easyroam"
+name="eduroam"
+
+client_cert="$base/easyroam_client_cert.pem"
+client_key="$base/easyroam_client_key.pem"
+root_ca="$base/easyroam_root_ca.pem"
+common_name=
+
+# define help message
+usage() {
+    local prog=$(basename "${0}")
+    local indent_length="${#prog}"
+    local indent=$(printf "%${indent_length}s")
+
+    # ensure that lines with the prog or indent don't exceed 80 characters!
+    cat << EOF
+NAME
+    $prog - Setup access to $(printf "\e]8;;https://eduroam.org/\aeduroam\e]8;;\a") on a network interface.
+
+SYNOPSIS
+    $prog [-h | --help] [-v | --verbose] [-q | --quiet] CERT DEVICE
+    $indent
+
+DESCRIPTION
+
+    This script is based on the $(printf "\e]8;;https://doku.tid.dfn.de/de:eduroam:easyroam#installation_der_easyroam_profile_auf_linux_geraeten\adocumentation\e]8;;\a") of the DFN.
+
+    It needs nmcli to work.
+
+OPTIONS
+
+    Basic Options
+
+        -h, --help     display this help message and exit
+        -v, --verbose  print more output (default)
+        -q, --quiet    print less output (buggy, do not use!)
+
+    Advanced Options
+
+        -b, --base     where to save the certificates
+                       defaults to ~/.cert/nm-easyroam
+        -n, --name     the connection name to use
+                       defaults to eduroam
+
+    Positional Arguments
+
+        CERT           the PKCS 12 certificate for authenticating the connection
+        DEVICE         the network interface to configure, must be one of
+                       $(get_devices | tr ' ' ', ')
+EOF
+}
+
+get_devices() {
+    echo $(nmcli device \
+             | grep -E "[[:space:]](wifi|ethernet)[[:space:]]" \
+             | cut -d ' ' -f 1)
+}
+
+check_device() {
+    local dev=$1
+    if get_devices | tr ' ' '\n' | grep "$dev"$; then
+        # device could be found
+        $VERBOSE
+    else
+        echo "Device "$dev" not found in network interfaces." 
+        echo "Use one of $(get_devices | tr ' ' ', ')"
+        exit 5
+    fi
+}
+
+get_device_type() {
+    local dev=$1
+    check_device "$dev"  # sanity check
+    echo $(nmcli device | grep "$dev"$ | tr -s ' ' | cut -d ' ' -f 2)
+}
+
+# parse arguments
+get_opts() {
+    while [[ $# -gt 0 ]]; do
+        local argument="${1}"
+        case "${argument}" in
+            # Basic Options
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            -v|--verbose)
+                VERBOSE=true  # basically a NOOP
+                ;;
+            -q|--quiet)
+                VERBOSE=false
+                ;;
+            # Advanced Options
+            -b|--base)
+                shift
+            	base="${1}"
+            	;;
+            -n|--name)
+                shift
+            	name="${1}"
+            	;;
+            -*)  # fail on unrecognized flags
+                echo -e "Unknown flag ${argument}\n"
+                usage
+                exit 2
+                ;;
+            *)  # parse positionals
+                echo arg $argument
+                if [[ -z "$P12_CERT" ]]; then
+                    P12_CERT="${argument}"
+                elif [[ -z $DEVICE ]]; then
+                    DEVICE="${argument}"
+                    check_device "$DEVICE"
+                else
+                    echo -e "Unknown positional argument ${argument}\n"
+                    exit 3
+                fi
+                echo $P12_CERT
+                echo $DEVICE
+                ;;
+        esac
+        shift
+    done
+    # check, whether required args where provided
+    if [[ -z "$P12_CERT" ]]; then
+        echo -e "Missing argument CERT"
+        exit 4
+    elif [[ -z "$DEVICE" ]]; then
+        echo -e "Missing argument DEVICE"
+        exit 4
+    fi
+}
+
+create_certs() {
+    # create target directory for certs
+    mkdir -p "$base"
+
+    # we use -provider legacy not -legacy for current openssl (e.g. on fedora)
+    # create client cert
+    openssl pkcs12 -in "$P12_CERT" -passin "pass:" -provider legacy -nokeys \
+      | openssl x509 -out "$client_cert" 
+
+    # get id for connection
+    common_name=$( \
+      openssl x509 -noout -subject -in "$client_cert" -provider legacy \
+        | sed 's/.*CN = \(.*\), C.*/\1/' \
+    )
+
+    # create encrypted client key
+    openssl pkcs12 -provider legacy -in "$P12_CERT" -passin "pass:" -nodes -nocerts \
+      | openssl rsa -aes256 -out "$client_key" -passout "pass:$passphrase" -provider legacy
+
+    # create ca cert
+    openssl pkcs12 -in "$P12_CERT" -passin "pass:" -provider legacy -cacerts \
+      -nokeys -out "$root_ca"
+
+    # make files user readable only
+    chmod -R 600 "$base/"*
+}
+
+setup_wifi_connection() {
+    # TODO interface needs to be passed or determined automatically
+    # add connection
+    nmcli connection add \
+      type wifi con-name "$name" ifname "$DEVICE" ssid "eduroam" -- \
+      wifi-sec.key-mgmt wpa-eap \
+      802-1x.eap tls \
+      802-1x.identity "$common_name" \
+      802-1x.ca-cert "$root_ca" \
+      802-1x.client-cert "$client_cert" \
+      802-1x.private-key-password "$passphrase" \
+      802-1x.private-key "$client_key"
+}
+
+setup_ethernet_connection() {
+    # TODO interface needs to be passed or determined automatically
+    # add connection
+    nmcli connection add \
+      type ethernet con-name "$name" ifname "$DEVICE" -- \
+      802-1x.eap tls \
+      802-1x.identity "$common_name" \
+      802-1x.ca-cert "$root_ca" \
+      802-1x.client-cert "$client_cert" \
+      802-1x.private-key-password "$passphrase" \
+      802-1x.private-key "$client_key"
+}
+
+setup() {
+    create_certs
+
+    # remove old connection if already defined
+    nmcli connection delete "$name" || true
+
+    # run setup according to connection type
+    local type=$(get_device_type "$DEVICE")
+    if [[ "$type" == "wifi" ]]; then
+        setup_wifi_connection
+    else
+        setup_ethernet_connection
+    fi
+
+    exit 0
+}
+
+# only run this if executed as a script, not if sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	get_opts "${@}"
+	setup
+	exit 0
+fi
+

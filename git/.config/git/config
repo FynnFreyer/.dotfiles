@@ -26,3 +26,13 @@
 [status]
     relativePaths = false
     branch = true
+[safe]
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src

@@ -1,4 +1,5 @@
 --- include-files.lua – filter to include Markdown files
+--- originally found at: https://github.com/pandoc/lua-filters
 ---
 --- Copyright: © 2019–2021 Albert Krewinkel
 --- License:   MIT – see LICENSE file for details
@@ -42,12 +43,12 @@ local function update_contents(blocks, shift_by, include_path)
       return image
     end,
     -- Update path for include-code-files.lua filter style CodeBlocks
-    CodeBlock = function (img)
-      if img.attributes.include and path.is_relative(img.attributes.include) then
-        img.attributes.include =
-          path.normalize(path.join({include_path, img.attributes.include}))
+    CodeBlock = function (cb)
+      if cb.attributes.include and path.is_relative(cb.attributes.include) then
+        cb.attributes.include =
+          path.normalize(path.join({include_path, cb.attributes.include}))
         end
-      return img
+      return cb
     end
   }
 
@@ -56,52 +57,65 @@ end
 
 --- Filter function for code blocks
 local transclude
-function transclude (img)
-  -- Markdown is used if this is nil.
-  -- local format = img.attributes['format']
-  if not img.src:match '.md$' then
+function transclude (cb)
+  -- ignore code blocks which are not of class "include".
+  if not cb.classes:includes 'include' then
     return
   end
-  -- TODO look at file suffix to determine
-  local format = nil
 
-  -- Auto shift headings
-  shift_heading_level_by = last_heading_level
+  -- Markdown is used if this is nil.
+  local format = cb.attributes['format']
+
+  -- Attributes shift headings
+  local shift_heading_level_by = 0
+  local shift_input = cb.attributes['shift-heading-level-by']
+  if shift_input then
+    shift_heading_level_by = tonumber(shift_input)
+  else
+    if include_auto then
+      -- Auto shift headings
+      shift_heading_level_by = last_heading_level
+    end
+  end
 
   --- keep track of level before recusion
   local buffer_last_heading_level = last_heading_level
 
   local blocks = List:new()
-  local fh = io.open(img.src)
-  if not fh then
-    io.stderr:write("Cannot open file " .. img.src .. " | Skipping includes\n")
-  else
-    -- read file as the given format with global reader options
-    local contents = pandoc.read(
-      fh:read '*a',
-      format,
-      PANDOC_READER_OPTIONS
-    ).blocks
-    last_heading_level = 0
-    -- recursive transclusion
-    contents = system.with_working_directory(
-        path.directory(img.src),
-        function ()
-          return pandoc.walk_block(
-            pandoc.Div(contents),
-            { Header = update_last_level, Image = transclude }
-          )
-        end).content
-    --- reset to level before recursion
-    last_heading_level = buffer_last_heading_level
-    contents = update_contents(contents, shift_heading_level_by, path.directory(img.src))
-    io.stderr:write("TEST\n")
-    fh:close()
+  for line in cb.text:gmatch('[^\n]+') do
+    if line:sub(1,2) ~= '//' then
+      local fh = io.open(line)
+      if not fh then
+        io.stderr:write("Cannot open file " .. line .. " | Skipping includes\n")
+      else
+        -- read file as the given format with global reader options
+        local contents = pandoc.read(
+          fh:read '*a',
+          format,
+          PANDOC_READER_OPTIONS
+        ).blocks
+        last_heading_level = 0
+        -- recursive transclusion
+        contents = system.with_working_directory(
+            path.directory(line),
+            function ()
+              return pandoc.walk_block(
+                pandoc.Div(contents),
+                { Header = update_last_level, CodeBlock = transclude }
+              )
+            end).content
+        --- reset to level before recursion
+        last_heading_level = buffer_last_heading_level
+        blocks:extend(update_contents(contents, shift_heading_level_by,
+                                      path.directory(line)))
+        fh:close()
+      end
+    end
   end
-  return contents
+  return blocks
 end
 
 return {
   { Meta = get_vars },
-  { Header = update_last_level, Image = transclude }
+  { Header = update_last_level, CodeBlock = transclude }
 }

@@ -1,38 +1,23 @@
 # TODO don't break lists over pages: https://tex.stackexchange.com/a/86063
 
 verbosity: INFO
-fail-if-warnings: true
+fail-if-warnings: false
 log-file: ${HOME}/.local/state/pandoc/pandoc.log
 
-resource-path:
-  - .
-  - ./images
-  - ./assets
-  - ${.}
-  - ${.}/..
-  - ${.}/../assets
-  - ${.}/../filters
-  - ${.}/../style
-  - ${.}/../style/citations
-  - ${.}/../style/css
-  - ${.}/../style/tex
-  - ${.}/../style/yaml
-  - ${HOME}/Documents/Notizen/Obisdian/Dateien
-  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Privat
-  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Science
-  - ${HOME}/Documents/Notizen/Obisdian/Dateien/Work
-
 metadata-files:
-  - ${.}/../style/yaml/base.yaml
+  - ${.}/../style/yaml/a4.yaml
+  - ${.}/../style/yaml/links.yaml
+  - ${.}/../style/yaml/font.yaml
+
 include-in-header:
-  - ${.}/../style/tex/base.tex
+  - ${.}/../style/tex/centered_figs.tex
+  - ${.}/../style/tex/deep_bullet_lists.tex
 
 filters:
   - ${.}/../filters/transclude.lua
   - ${.}/../filters/plantuml.py
   - ${.}/../filters/mermaid.py
-  # TODO: should this be vendored in? requires pipx install otherwise
-  - pandoc-latex-environment
 
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl
+

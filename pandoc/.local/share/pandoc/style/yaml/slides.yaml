@@ -4,10 +4,11 @@ theme: default
 colortheme: dove
 navigation: frame
 
-# reset these base settings
+# make sure to reset these base settings
 geometry:
   - paper=
   - margin=
 
+# larger font for slides
 fontsize: 14pt
 ---

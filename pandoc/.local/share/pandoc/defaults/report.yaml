@@ -1,6 +1,0 @@
-defaults:
-  - base.yaml
-metadata-files:
-  - ${.}/../style/yaml/report.yaml
-include-in-header:
-  - ${.}/../style/tex/report.tex

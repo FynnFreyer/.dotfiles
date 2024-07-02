@@ -1,0 +1,10 @@
+% patch \@startsection for equation numbering per (sub-) section
+% https://tex.stackexchange.com/a/232052
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@startsection}% <cmd>
+  {\if@noskipsec}% <search>
+  {\csgdef{theequation}{\csname the#1\endcsname.\arabic{equation}}\if@noskipsec}% <replace>
+  {}{}% <success><failure>
+\makeatother
+

@@ -1,19 +1,9 @@
-% make pictures float in the center, right where they are defined
-\usepackage{float}
-\makeatletter
-\def\fps@figure{H}
-\makeatother
+% configure code listings with automatic 
+% softbreaks for lines that are too long
 
+% defines lots of convenience functions, e.g.,
 % allows checking if commands are defined and hooking into environments
 \usepackage{etoolbox}
-
-% allows customization of lists
-\usepackage{enumitem}
-% use bullets on every indentation level
-\setlist[itemize]{label=$\bullet$}
-% allow for deeper nesting
-\setlistdepth{9}
-\renewlist{itemize}{itemize}{9}
 
 % provides fancy colored boxes
 % MUST be included before redefining verbatim
@@ -40,11 +30,4 @@
 \BeforeBeginEnvironment{Highlighting}{\begin{samepage}}
 \AfterEndEnvironment{Highlighting}{\end{samepage}}
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
-
-% define admonition styles
-\usepackage{tcolorbox}
-
-\newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
-\newtcolorbox{warning-box}{colback=orange!5!white,arc=0pt,outer arc=0pt,colframe=orange!80!black}
-\newtcolorbox{error-box}{colback=red!5!white,arc=0pt,outer arc=0pt,colframe=red!75!black}
 

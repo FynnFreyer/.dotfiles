@@ -1,0 +1,22 @@
+# defines admonition blocks that can be used with fenced divs
+# e.g.:
+#
+#   ::: info
+#   This is an info bubble!
+#   :::
+#
+# this should be imported by other default files rather than used directly
+# import works via the `defaults:` key
+
+metadata-files:
+  - ${.}/../style/yaml/colored_admonitions.yaml
+
+include-in-header:
+  - ${.}/../style/tex/colored_admonitions.tex
+
+# TODO: should this be vendored in?
+#   needs to be installed via `pipx install pandoc-latex-environment`
+#   https://github.com/chdemko/pandoc-latex-environment
+filters:
+  - pandoc-latex-environment
+

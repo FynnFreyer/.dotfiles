@@ -1,5 +1,6 @@
 ---
 fontsize: 14
 linestretch: 1
-title: ""
+geometry:
+  - margin=1.5cm
 ---

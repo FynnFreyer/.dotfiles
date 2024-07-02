@@ -3,6 +3,7 @@ toc: true
 toc-depth: 3
 numbersections: true
 
+# new page after toc
 include-before: |
   ```{=latex}
   \newpage{}

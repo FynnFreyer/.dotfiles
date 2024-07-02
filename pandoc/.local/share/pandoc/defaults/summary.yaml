@@ -1,0 +1,12 @@
+defaults:
+  - base.yaml
+  - admonitions.yaml  # defines fenced div admonition blocks
+
+metadata-files:
+  - ${.}/../style/yaml/dense.yaml
+  - ${.}/../style/yaml/no_title.yaml
+  - ${.}/../style/yaml/toc_lite.yaml
+
+variables:
+  pagestyle: empty
+

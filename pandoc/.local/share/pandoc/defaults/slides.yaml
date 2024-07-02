@@ -1,9 +1,10 @@
-from: markdown+fenced_divs
 to: beamer
 
 defaults:
   - base.yaml
+
 metadata-files:
   - ${.}/../style/yaml/slides.yaml
+
 include-in-header:
   - ${.}/../style/tex/slides.tex

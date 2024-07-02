@@ -1,0 +1,18 @@
+% \usepackage{footnotebackref}
+
+% the following would add a hooked arrow to footnotes, that links back to the mention
+% the arrow appears between the number and the note, though, and I don't like that
+
+\newcommand{\backrefarrow}{
+    \hspace{.1em}
+    \mathrel{%
+        \raisebox{1.5ex}{%
+        \scalebox{0.5}{%
+        \rotatebox[origin=c]{90}{%
+            \(\hookrightarrow\)
+        }}}
+    }
+    \hspace{.3em}
+}
+\usepackage[symbol=\(\backrefarrow\),numberlinked=false]{footnotebackref}
+

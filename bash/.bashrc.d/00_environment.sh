@@ -1,8 +1,18 @@
 BIN_DIRS="$HOME/.local/bin:$HOME/bin"
+LIB_DIRS="$HOME/.local/lib"
+INCLUDE_DIRS="$HOME/.local/include"
 
-# add user bin dirs to PATH
+# add user binaries, libs and includes to search PATHs
 if ! [[ "$PATH" =~ $BIN_DIRS ]]; then
     export PATH="$BIN_DIRS:$PATH"
+fi
+
+if ! [[ "$LD_LIBRARY_PATH" =~ $LIB_DIRS ]]; then
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LIB_DIRS"
+fi
+
+if ! [[ "$CPATH" =~ $INCLUDE_DIRS ]]; then
+    export CPATH="$INCLUDE_DIRS:$CPATH"
 fi
 
 # add cargo bin

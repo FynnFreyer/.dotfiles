@@ -43,7 +43,7 @@
     transition: all var(--transition-duration) var(--transition-smoothing-function);
 }
 
-/* Extend sidebar on hover, when using SideBery. */
+/* Extend sidebar on hover, or when the `extend` sentinel attribute is set. */
 #sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"]:hover,
 #sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"][extend="true"] {
     min-width: var(--sidebery-extended-width) !important;

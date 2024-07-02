@@ -1,5 +1,5 @@
-// stolen from MrOtherGuy https://github.com/MrOtherGuy/fx-autoconfig/
-// check the README in the autoconfig folder for (scarce) details
+// Stolen from MrOtherGuy: https://github.com/MrOtherGuy/fx-autoconfig/
+// Check the (scarce) README for details.
 
 const {AppConstants} = ChromeUtils.importESModule("resource://gre/modules/AppConstants.sys.mjs")
 

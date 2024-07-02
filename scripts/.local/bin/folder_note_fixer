@@ -214,7 +214,7 @@ def cleanup(interactive: bool = True) -> None:
             rmtree(TMP_DIR)
             _logger.info("Deleted backups in %s.", TMP_DIR)
         else:
-            _logger.info("Skipped backup deletion.", TMP_DIR)
+            _logger.info("Skipped backup deletion")
 
 
 def main(note_dir: Path, label: str, interactive: bool = True) -> None:

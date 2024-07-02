@@ -1,0 +1,5 @@
+filter_exec: anki
+
+extra_includes:
+  - "../match/_anki.yml"
+

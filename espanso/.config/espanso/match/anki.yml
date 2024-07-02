@@ -1,0 +1,13 @@
+# TODO: prefix filename with _ once config filters become available on wayland
+
+matches:
+  - trigger: ':inl'
+    label: Inline math.
+    force_clipboard: true
+    replace: '\( $|$ \)'
+
+  - trigger: ':dsp'
+    label: Display math.
+    force_clipboard: true
+    replace: '\[ $|$ \]'
+

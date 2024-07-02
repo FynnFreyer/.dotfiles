@@ -8,5 +8,5 @@ keyboard_layout:
   layout: de
 
 search_shortcut: CTRL+SHIFT+SPACE
-search_trigger: ":help"
+search_trigger: ";help"
 

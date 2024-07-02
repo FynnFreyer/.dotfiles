@@ -23,6 +23,10 @@ matches:
     replace: '\in \math{{format}}{{{content}}}'
     label: 'Member of a Set with formatted name. Like "\in \math(bb|rm|...){}".'
 
+  - regex: ':set'
+    replace: '\{{{content}}\}'
+    label: 'A set.'
+
   - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
     replace: '{{left}} \times {{right}}'
     label: 'Rule for cross products, like "n \times m".'
@@ -43,7 +47,6 @@ matches:
     label: 'The transpose of.'
 
   - trigger: ':idx'
-    force_clipboard: true  # needed for caret (^)
     replace: '_{{{content}}}'
     label: 'The index of.'
 
@@ -91,8 +94,25 @@ matches:
     replace: '\left{{left_sign}} {{content}} \right{{right_sign}}'
     label: Arbitrary left and right scaled symbols.
 
+  - trigger: ':larr'
+    label: Left arrow.
+    replace: '\leftarrow'
+
+  - trigger: ':rarr'
+    label: Right arrow.
+    replace: '\rightarrow'
+
+  - trigger: ':lrarr'
+    label: Left-right arrow.
+    replace: '\leftrightarrow'
+
   - trigger: ':fr'
+    label: Fraction.
     replace: '\frac{{{content}}}{}'
+
+  - trigger: ':ov'
+    label: Horizontal line.
+    replace: '\over'
 
   - trigger: ':sq'
     label: A square root.
@@ -143,6 +163,16 @@ matches:
               {{content}}
           \end{split}
       \end{equation}
+
+  - trigger: ':inf'
+    label: Define an inference rule.
+    force_clipboard: true  # needed to avoid stacking indent
+    replace: |
+      \begin{array}{l}
+          p{{content}}  \\
+          \hline
+          q
+      \end{array}
 
   - regex: ':(?P<count>\d?)(?P<type>[d]?)cases'
     label: Enter the cases environment for functions that return stuff based on conditions.

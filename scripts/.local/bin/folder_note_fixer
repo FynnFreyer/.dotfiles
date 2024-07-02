@@ -1,0 +1,272 @@
+#!/usr/bin/env python
+"""
+When a normal note is converted into an index-style folder note,
+its linked mentions are changed from
+``[Note](relative/path/to/Note.md)`` to
+``[README](relative/path/to/Note/README.md)``.
+
+For this script, `Python-Markdown <https://github.com/Python-Markdown/markdown>`_
+and `Beautiful Soup 4 <https://beautiful-soup-4.readthedocs.io/en/latest/>`_
+need to be installed (with ``python -m pip install markdown beautifulsoup4``).
+"""
+
+from argparse import ArgumentParser, Namespace
+from collections import defaultdict
+from difflib import unified_diff
+from logging import getLogger, basicConfig, INFO
+from os.path import relpath
+from pathlib import Path
+from shutil import rmtree
+from subprocess import run
+from sys import argv
+from tempfile import mkdtemp, mktemp
+from urllib.parse import unquote
+
+TMP_DIR: Path | None = None
+
+_logger = getLogger(__name__)
+basicConfig(format="{levelname}: {message}",
+            style="{",
+            level=INFO)
+
+
+def parse_md(path: Path) -> "BeautifulSoup":
+    """Parse a markdown file, and return a ``BeautifulSoup`` object."""
+    try:
+        from bs4 import BeautifulSoup
+        from markdown import markdown
+    except ImportError:
+        _logger.error("Please install the packages `markdown` and `beautifulsoup4`.")
+
+    with path.open() as file:
+        html = markdown(file.read())
+    return BeautifulSoup(html, 'html.parser')
+
+
+def find_problems(note_dir: Path, label: str) -> dict[Path, list[tuple[str, str]]]:
+    """
+    Find problematic files, i.e., those that contain a link that is labeled with ``label``,
+    and calculate the necessary replacements that should be performed on the note text.
+
+    :param note_dir: The vault root.
+    :param label: The problematic link label, e.g., ``README`` for links like ``[README](path/to/Note/README.md)``.
+    :return: A dict that maps resolved paths, pointing to files that contain problematic links, to replacements.
+    """
+    proc = run(['grep', '-rIlF', f'[{label}]', str(note_dir)], capture_output=True, text=True)
+    replacement_map = defaultdict(list)
+    for path_str in proc.stdout.splitlines():
+        if not path_str.endswith(".md"):  # make sure we only keep markdown files
+            continue
+        path = Path(path_str).resolve()
+
+        # now we parse the md, so we can check whether the grepped pattern actually is a link
+        soup = parse_md(path)
+        # get all links with the offending label
+        problematic_links = [link for link in soup.find_all('a') if link.text == label]
+
+        for link in problematic_links:
+            # get the href and unquote the url escapes to get the relative note path
+            href = link.get('href')
+            rel_note_path = unquote(href)
+
+            try:
+                # find the absolute path of the linked note
+                abs_note_path = path.parent / rel_note_path
+                linked_note = abs_note_path.resolve(strict=True)
+            except FileNotFoundError:
+                _logger.warning("Found broken link to %s in %s!\nSkipping...", rel_note_path, path)
+                continue
+
+            # # possible sanity check for README files,
+            # # but doesn't make sense in the general case
+            # if linked_note.name != "README.md":
+            #     continue
+
+            # the folder note should be labeled with the name of its parent folder
+            proper_name = linked_note.parent.name
+
+            # build a link replacement
+            problematic_link = f"[{label}]({href})"
+            fixed_link = f"[{proper_name}]({href})"
+            replacement = problematic_link, fixed_link
+
+            # add it to the map
+            replacement_map[path].append(replacement)
+
+    return dict(replacement_map)
+
+
+def calculate_fixes(replacement_map: dict[Path, list[tuple[str, str]]]) -> dict[Path, tuple[str, str]]:
+    """
+    Calculate fixed file contents from a replacement map.
+
+    :param replacement_map: A replacement map as returned by :func:`find_problems`.
+    :return: A mapping from resolved paths to a tuple ``old_text, new_text``.
+    """
+    # replace problematic links
+    fixes = {}
+    for path, replacements in replacement_map.items():
+        with path.open("r") as file:
+            old_text = file.read()
+            new_text = old_text
+
+        for problematic_link, fixed_link in replacements:
+            new_text = new_text.replace(problematic_link, fixed_link)
+
+        fixes[path] = old_text, new_text
+    return fixes
+
+
+def calculate_diff(before: str, after: str, fromfile: str = "") -> str:
+    """
+    Calculate a diff for display.
+
+    :param fromfile: Path of the diffed file.
+    :param before: Old text.
+    :param after: New text.
+    :return: A unified diff.
+    """
+
+    before = before.splitlines(keepends=True)
+    after = after.splitlines(keepends=True)
+    diff = unified_diff(
+            before, after,
+            fromfile=fromfile,
+            tofile="modified",
+    )
+    return "".join(diff)
+
+
+def confirm(question: str, default: bool = True) -> bool:
+    """Get confirmation for a yes/no question."""
+    if default is True:
+        string_repr, positive_answers = "[Y/n]", ["", "Y"]
+    else:
+        string_repr, positive_answers = "[y/N]", ["Y"]
+
+    while (answer := input(f"{question} {string_repr}: ").upper()) not in ["", "Y", "N"]:
+        _logger.warning("Invalid answer: %s", answer)
+    return answer in positive_answers
+
+
+def fix_files(fixes: dict[Path, tuple[str, str]],
+              index_file_name: str,
+              note_dir: Path,
+              interactive: bool = True) -> None:
+    """
+    Fix the problematic note links.
+
+    :param fixes: A fix mapping as returned by :func:`calculate_fixes`.
+    :param index_file_name: The file name for folder notes. Needed, so we can use meaningful names in backups.
+    :param note_dir: Path of the note vault. Needed for proper diff display.
+    :param interactive: Ask for confirmation before changing file contents.
+    :return: Nothing.
+    """
+    if note_dir is None:
+        note_dir = Path()
+
+    for path, (old_text, new_text) in fixes.items():
+        file_repr = str(relpath(path, start=note_dir))
+
+        patch = True
+        if interactive:
+            diff = calculate_diff(old_text, new_text, fromfile=file_repr)
+            print(diff)
+            patch = confirm(f"Apply patch to {file_repr}?")
+
+        if patch:
+            # ensure we have a backup dir
+            global TMP_DIR
+            if TMP_DIR is None:
+                TMP_DIR = Path(mkdtemp())
+            backup_path = TMP_DIR / path.name
+            # we might have a folder note, or an otherwise non-unique note name
+            is_folder_note = path.stem == index_file_name
+            needs_unique_name = is_folder_note or backup_path.exists()
+            if needs_unique_name:
+                # get a unique path in the backup dir
+                backup_path = Path(mktemp(suffix=".md", dir=TMP_DIR))
+
+            with backup_path.open("w") as backup_file:
+                backup_file.write(old_text)
+            _logger.info("Backed up old content of %s to %s", file_repr, backup_path)
+
+            # overwrite file contents
+            with path.open("w") as file:
+                file.write(new_text)
+            _logger.info("Replaced contents of %s", file_repr)
+        else:
+            _logger.info("Skipped %s", file_repr)
+
+
+def cleanup(interactive: bool = True) -> None:
+    """
+    Clean up the temporary backup directory if one was written.
+
+    :param interactive: Ask for confirmation before removing the temporary backup dir.
+    :return: Nothing.
+    """
+    if TMP_DIR is not None:
+        delete = True
+        if interactive:
+            delete = confirm(f"Delete backups? {TMP_DIR}", default=False)
+        if delete:
+            rmtree(TMP_DIR)
+            _logger.info("Deleted backups in %s.", TMP_DIR)
+        else:
+            _logger.info("Skipped backup deletion.", TMP_DIR)
+
+
+def main(note_dir: Path, label: str, interactive: bool = True) -> None:
+    """
+    Run the note fixer.
+
+    :param note_dir: The note folder to search through.
+    :param label: The faulty link text.
+    :param interactive: Whether to ask for confirmation before changing file contents.
+    :return: Nothing.
+    """
+    replacements = find_problems(note_dir, label)
+    fixes = calculate_fixes(replacements)
+    fix_files(fixes, label, note_dir, interactive=interactive)
+    cleanup(interactive)
+
+
+def resolved_path(path: str) -> Path:
+    """Helper function for argparse argument type."""
+    # we don't want to resolve with strict=True, because that gives a FileNotFoundError
+    path = Path(path).resolve()
+    if not path.exists():
+        # for ValueError argparse gives sensible error messages to user
+        raise ValueError("Not an existing path!")
+    return path
+
+
+def get_parser() -> ArgumentParser:
+    parser = ArgumentParser("folder_note_fixer",
+                            description="After refactoring a note into an index-file folder-note,"
+                                        "revert link labels mentioning this to the correct note name,"
+                                        "as given by the parent folder.")
+    parser.add_argument("note_dir", metavar="NOTE_DIR", type=resolved_path, help="path of the vault root")
+    parser.add_argument("-l", "--label", default="README",
+                        help="the index file name without suffix, e.g. `README` or `__about__`, default is `README`")
+    parser.add_argument("-n", "--noninteractive",
+                        dest="interactive", action="store_false",
+                        help="run the program without manual intervention")
+    return parser
+
+
+def parse_args(args: list[str] | None = None, parser: ArgumentParser | None = None) -> Namespace:
+    if args is None:
+        args = argv[1:]
+    if parser is None:
+        parser = get_parser()
+    return parser.parse_args(args)
+
+
+if __name__ == '__main__':
+    try:
+        args = parse_args()
+        main(args.note_dir, args.label, interactive=args.interactive)
+    except KeyboardInterrupt:
+        _logger.warning("Aborted. Bye!")

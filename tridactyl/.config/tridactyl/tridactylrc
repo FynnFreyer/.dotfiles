@@ -39,7 +39,8 @@ bind e scrollline -3
 bind E scrollpage -1
 
 " leave my sidebery keybinds alone
-unbind --mode=browser <C-e> <C-.> <C-,>
+reset <C-e> <C-.> <C-,>
+unbind <C-e> <C-.> <C-,>
 
 " focus searchbar with Ctrl-l on DDG (instead of addressbar)
 bindurl duckduckgo.com <C-l> hint -cV input#search_form_input

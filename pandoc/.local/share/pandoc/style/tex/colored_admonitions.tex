@@ -1,7 +1,41 @@
 % define admonition styles
 \usepackage{tcolorbox}
+\tcbuselibrary{skins}
 
-\newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
-\newtcolorbox{warning-box}{colback=orange!5!white,arc=0pt,outer arc=0pt,colframe=orange!80!black}
-\newtcolorbox{error-box}{colback=red!5!white,arc=0pt,outer arc=0pt,colframe=red!75!black}
+% set common options, doesn't affect nested boxes
+\tcbset{
+    parbox=false,  % make paragraph spacing normal
+    skin=enhanced,  % enable tikz code for graphics
+    top=0mm,  % less distance between title and text
+}
+
+\newtcolorbox{aside-box}{
+    title=Side Note,
+    colback=gray!10!white,
+    colframe=gray!40!black
+}
+
+\newtcolorbox{info-box}{
+    title=Info,
+    colback=cyan!10!white,
+    colframe=cyan!60!black
+}
+
+\newtcolorbox{warning-box}{
+    title=Warning,
+    colback=orange!10!white,
+    colframe=orange!80!black
+}
+
+\newtcolorbox{danger-box}{
+    title=Danger,
+    colback=red!10!white,
+    colframe=red!75!black
+}
+
+\newtcolorbox[auto counter]{example-box}{
+    title=Example \thetcbcounter,
+    colback=blue!10!white,
+    colframe=blue!60!black
+}
 

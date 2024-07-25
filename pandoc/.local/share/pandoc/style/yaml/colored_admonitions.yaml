@@ -3,5 +3,7 @@ pandoc-latex-environment:
   tcolorbox: [box]
   info-box: [info]
   warning-box: [warning]
-  error-box: [error]
+  danger-box: [danger]
+  aside-box: [aside]
+  example-box: [example]
 ---

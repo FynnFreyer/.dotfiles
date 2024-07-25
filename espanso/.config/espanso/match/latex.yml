@@ -26,6 +26,10 @@ matches:
   - regex: ':set'
     replace: '\{{{content}}\}'
     label: 'A set.'
+    
+  - regex: ':scomp'
+    replace: '\{{{content}} \mathbin{|} i \in \mathbb{N}\}'
+    label: 'A set comprehension.'
 
   - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
     replace: '{{left}} \times {{right}}'
@@ -132,6 +136,11 @@ matches:
     force_clipboard: true  # needed for caret (^)
     replace: '\sum_{i = 1$|$}^{n}'
 
+  - trigger: ':prod'
+    label: A product with limits.
+    force_clipboard: true  # needed for caret (^)
+    replace: '\prod_{i = 1$|$}^{n}'
+
   - trigger: ':cup'
     label: Union of sets.
     force_clipboard: true  # needed for caret (^)
@@ -228,6 +237,27 @@ matches:
             - '%CONFIG%/scripts/matrix.py'
             - '--inline'
             - '--unindented'
+            - '{{rows}}'
+            - '{{cols}}'
+
+  # see types of matrices here: https://www.overleaf.com/learn/latex/Matrices
+  - regex: ':0(?P<type>[pbBvV]?)mat(?P<rows>\d+)x(?P<cols>\d+)[^\d]'
+    label: Generate an empty M by N matrix of a certain type (p|b|B|v|V). Use like so :0<type>mat<rows>x<cols>.
+    force_clipboard: true  # needed to avoid stacking indent
+    replace: |-
+        \begin{{{type}}matrix}
+            {{matrix}}
+        \end{{{type}}matrix}
+    vars:
+      - name: matrix
+        type: script
+        params:
+          args:
+            - python
+            - '%CONFIG%/scripts/matrix.py'
+            - '--var'
+            - '0'
+            - '--unindexed'
             - '{{rows}}'
             - '{{cols}}'
 

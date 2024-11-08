@@ -1,5 +1,9 @@
 fontsize: 12
+linestretch: 1.2
+# pdflatex configuration
 fontfamily: roboto
 fontfamilyoptions: sfdefault
-linestretch: 1.2
+# xelatex configuration
+mainfont: roboto
+monofont: inconsolata
 

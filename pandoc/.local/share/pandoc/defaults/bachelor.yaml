@@ -1,14 +1,6 @@
 defaults:
-  - base.yaml
-  - admonitions.yaml  # defines fenced div admonition blocks
-
-metadata-files:
-  - ${.}/../style/yaml/toc_full.yaml
+  - paper.yaml  # defines fenced div admonition blocks
 
 include-in-header:
-  - ${.}/../style/tex/start_ch_on_new_pg.tex
-  - ${.}/../style/tex/soft_wrapped_code.tex
-  - ${.}/../style/tex/eq_numbering_per_sec.tex
-
-template: ${.}/../assets/htw-bachelor.tex
+  - ${.}/../style/tex/bachelor.tex
 

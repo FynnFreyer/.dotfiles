@@ -11,6 +11,7 @@ from pathlib import Path
 from collections import OrderedDict, defaultdict, namedtuple
 from re import match
 from importlib import reload, import_module
+from csv import reader
 
 def now():
     return $(date '+%F %X').strip()
@@ -58,12 +59,28 @@ def load_csv(csv_path: str | Path, sep: str = ',', quote: str = '"', parse: bool
         return field
 
     with open(csv_path) as csv_file:
-        content = [[parse_data(field.strip().strip(quote)) for field in line.rstrip(sep).split(sep)] for line in csv_file]
+        csv = reader(csv_file, delimiter=sep, quotechar=quote)
+        content = [[parse_data(field) for field in row] for row in csv]
 
     return content
     
 def load_tsv(tsv_path: str | Path, quote: str = '"', parse: bool = True) -> list[list[str | int | float]]:
     return load_csv(tsv_path, sep='\t', quote=quote, parse=parse)
+
+
+def to_script(file_name: str | None = None):
+	"""Put the last command into a script file"""
+	if file_name is None:
+		file_name = "script.xsh"
+
+	last_cmd = $(history show -1)
+	script_code = "#!/usr/bin/env xonsh\n\n" + last_cmd
+	dest = Path(file_name).resolve()
+	if dest.exists():
+		print(f"File {dest} exists, aborting.")
+	else:
+		with dest.open("w") as f:
+			f.write(script_code)
 
 
 def message_in_output(message, process):
@@ -98,7 +115,11 @@ def sync_dotfiles(args, stdin=None):
         print(status, '\n')
 
         print('Committing ...')
-        commit = !(git commit -am f'{$(hostname).strip()}@{$(date -Imin)}')
+        host = $(hostname).strip()
+        timestamp = $(date -Imin).strip()
+        message = f'{host}@{timestamp}'
+        
+        commit = !(git commit -am @(message))
         valid_messages = ['Your branch is ahead', 'Your branch is up to date']
         wtf = repr(commit)  # it seems to be necessary to evaluate commit at least once, or it won't properly evaluate the output
         if not any([message_in_output(msg, commit) for msg in valid_messages]):

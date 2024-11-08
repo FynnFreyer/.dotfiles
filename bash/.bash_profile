@@ -15,3 +15,4 @@ if [ -d ~/.bash_profile.d ]; then
 fi
 
 unset profile
+. "$HOME/.cargo/env"

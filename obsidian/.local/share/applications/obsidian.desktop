@@ -9,7 +9,8 @@ Categories=Notes;Office;
 Comment=Start Obsidian to take notes
 Keywords=Note taking;Annotation;Markup
 
-Exec=/home/fynn/.local/bin/Obsidian.AppImage
+# Exec=env LC_TIME=de_DE.utf8 /home/fynn/.local/bin/Obsidian.AppImage %U
+Exec=/home/fynn/.local/bin/Obsidian.AppImage %U
 Icon=/home/fynn/.local/share/icons/obsidian-128x128.png
 Terminal=false
 

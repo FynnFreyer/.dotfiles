@@ -24,10 +24,11 @@ def generate_cases(case_count, indent, align, cursor):
     cases = []
     for i in range(case_count):
         case_indent = '    ' if indent else ''
-        case_align = ' & ' if align else ' '
+        case_align = '& ' if align else ' '
         case_cursor = '$|$' if cursor and i == 0 else ''
-
-        case_str = rf'{case_indent}{case_cursor},{case_align}\text{{}} \\'
+        case_condition = "" if i != case_count - 1 else r"\text{Andernfalls.}"
+        
+        case_str = rf'{case_indent}{case_cursor}{case_align}, {case_condition} \\'
         cases.append(case_str)
 
     body = '\n'.join(cases) + '\n'

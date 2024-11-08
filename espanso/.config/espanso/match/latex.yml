@@ -15,20 +15,20 @@ global_vars:
       echo: $|$
 
 matches:
-  - regex: ':(?P<format>bb|bf|rm|it|normal|cal|scr|frak)'
+  - regex: ':(?P<format>bb|bf|rm|it|normal|cal|scr|frak|tt)'
     replace: '\math{{format}}{{{content}}}'
-    label: 'Use various LaTeX math formattings. (bb|rm|it|normal|cal|scr|frak)'
+    label: 'Use various LaTeX math formattings. (bb|rm|it|normal|cal|scr|frak|tt)'
 
-  - regex: ':in(?P<format>bb|rm|it|normal|cal|scr|frak)'
+  - regex: ':in(?P<format>bb|rm|it|normal|cal|scr|frak|tt)'
     replace: '\in \math{{format}}{{{content}}}'
-    label: 'Member of a Set with formatted name. Like "\in \math(bb|rm|...){}".'
+    label: 'Member of a set with formatted name. Like "\in \math(bb|rm|...){}".'
 
   - regex: ':set'
     replace: '\{{{content}}\}'
     label: 'A set.'
     
   - regex: ':scomp'
-    replace: '\{{{content}} \mathbin{|} i \in \mathbb{N}\}'
+    replace: '\{i{{content}} \mathbin{|} i \in \mathbb{N}\}'
     label: 'A set comprehension.'
 
   - regex: ':(?P<left>[\w\d]{1,2})x(?P<right>[\w\d]{1,2})'
@@ -110,7 +110,7 @@ matches:
     label: Left-right arrow.
     replace: '\leftrightarrow'
 
-  - trigger: ':fr'
+  - trigger: ':frac'
     label: Fraction.
     replace: '\frac{{{content}}}{}'
 

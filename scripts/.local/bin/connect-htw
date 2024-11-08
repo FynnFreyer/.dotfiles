@@ -34,18 +34,21 @@ cleanup() {
 SCRIPT_DIR=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
 
 # set defaults
-VERBOSE=true
+VERBOSE=true                  # print outputs
+HELP=false                    # whether we exited with help message
 
-# whether we exited with help message
-HELP=false
+# connection options
+AUTH_GROUP=HTW-SSL-VPN-Split  # only tunnel traffic to htw by default
+MAN=false                     # connect to management network
+URL=vpncl.htw-berlin.de       # VPN server to use
+MAN_URL=vbvpn.htw-berlin.de   # VPN server to use for management network
+DEVICE=tun-htw                # tun device name
+MAN_DEVICE=tun-man            # device name for management network
 
-URL=vpncl.htw-berlin.de
-AUTH_GROUP=HTW-SSL-VPN-Split  # only tunnel relevant traffic by default
+# auth options
+USER=                         # no user set -> ask for user
+PASSWORD_FILE=                # no file set -> ask for pw
 
-USER=           # no user set -> ask for user
-PASSWORD_FILE=  # no file set -> ask for pw
-
-DEVICE=tun1
 
 # define help message
 usage() {
@@ -70,8 +73,12 @@ DESCRIPTION
     This script uses $(printf "\e]8;;https://wiki.archlinux.org/title/OpenConnect\aOpenConnect\e]8;;\a") to connect to the Cisco-VPN securing the
     HTW-network.
     
-    This script needs the ip and openconnect commands to be available in PATH
-    and administrator rights to execute.
+    This script depends on the ip and openconnect commands, so these need to be
+    available in your PATH. Also, for setting up and using a $(printf "\e]8;;https://en.wikipedia.org/wiki/TUN/TAP\aTUN\e]8;;\a") device admin
+    rights are required. When connecting to the management network, the $(printf "\e]8;;https://github.com/cernekee/ocproxy\aocproxy\e]8;;\a")
+    command is needed as well.
+    
+    Both openconnect and ocproxy are available in the fedora package repos.
 
 OPTIONS
 
@@ -97,7 +104,7 @@ OPTIONS
     Advanced Options
 
         -d, --device   Use (and create if necessary) the specified tun device.
-                       (Defaults to tun1)
+                       (Defaults to tun-htw)
 
 EOF
 }
@@ -126,8 +133,7 @@ get_opts() {
                 AUTH_GROUP=HTW-SSL-VPN-Full
                 ;;
             -m|--man)
-                URL="${URL}/man"  # different URL for management access
-            	AUTH_GROUP=HTW-SSL-VPN-MAN
+                MAN=true
                 ;;
             # Login Options
             -u|--user)
@@ -184,19 +190,9 @@ teardown_tun() {
     fi
 }
 
-connect_htw() {
-    $VERBOSE && echo "Connect using ${AUTH_GROUP} profile"
-
-    # fedora does not allow insecure crypto, but the HTW-VPN only supports
-    # TLSv1.0 with a bad cipher
-    #   see https://gitlab.com/openconnect/openconnect/-/issues/326
-    #   and https://gitlab.com/openconnect/openconnect/-/issues/253
-    # this is why we overwrite GNUTLS_SYSTEM_PRIORITY_FILE here + preserve
-    # it in sudo and also set a gnutls priority manually for openconnect
-
-    export GNUTLS_SYSTEM_PRIORITY_FILE=/dev/null
-    GNU_TLS_PRIO=NORMAL:+SHA256:%COMPAT
-
+ask_auth() {
+    # get auth info
+    
     # if no user was set, we ask for one
     if [[ -z $USER ]]; then
         IFS= read -rp 'Username: ' USER
@@ -219,6 +215,22 @@ connect_htw() {
         printf "${PASSWORD}" > $PW_PIPE &
         unset PASSWORD  # make sure PW is unavailable now
     fi
+}
+
+connect_htw() {
+    # connect to the (outer) HTW VPN
+
+    $VERBOSE && echo "Connect using ${AUTH_GROUP} profile"
+
+    # fedora does not allow insecure crypto, but the HTW-VPN only supports
+    # TLSv1.0 with a bad cipher
+    #   see https://gitlab.com/openconnect/openconnect/-/issues/326
+    #   and https://gitlab.com/openconnect/openconnect/-/issues/253
+    # this is why we overwrite GNUTLS_SYSTEM_PRIORITY_FILE here + preserve
+    # it in sudo and also set a gnutls priority manually for openconnect
+
+    export GNUTLS_SYSTEM_PRIORITY_FILE=/dev/null
+    GNU_TLS_PRIO=NORMAL:+SHA256:%COMPAT
 
     # conditional execution with && and || is not possible,
     # because openconnect always exits with 0
@@ -241,8 +253,24 @@ connect_htw() {
                  --authgroup=${AUTH_GROUP} \
                  --interface="${DEVICE}" \
                  --gnutls-priority=${GNU_TLS_PRIO} 1> /dev/null 2>&1 < $PW_PIPE
-
     fi
+}
+
+connect_man() {
+    # connect to the (inner) management network
+
+    # TODO this needs to be executed on remote site
+    openconnect \
+        --protocol=fortinet \
+        --passwd-on-stdin \
+        --user="${USER}" \
+        --interface="${DEVICE}" \
+        --server="${URL}" < $PW_PIPE
+}
+
+connect() {
+    # TODO switching logic depending on MAN
+    connect_htw
 }
 
 main() {
@@ -251,7 +279,8 @@ main() {
     if sudo true; then
         HEED_INT=true
         setup_tun
-        connect_htw
+        ask_auth
+        connect
         exit 0
     else
         echo -e "\n$(basename ${0}): Needs to be run as root.\n"

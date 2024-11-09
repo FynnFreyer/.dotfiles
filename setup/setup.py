@@ -733,27 +733,27 @@ def main(args):
         ('Arbeit/Wojtek/HTW', 'id_htw_rsa', ssh_dir),
     )
 
-    # install_keepass_attachments('~/pw.kdbx', attachments)
-    # secure_and_add_ssh_keys()
+    install_keepass_attachments('~/pw.kdbx', attachments)
+    secure_and_add_ssh_keys()
 
     # # install IDEs
-    # ide_data_path = args.ide
-    # with ide_data_path.open() as ide_data_file:
-    #     # url pattern: https://download.jetbrains.com/{lang_code}/{ide_name}-{version}.tar.gz
-    #     data = json.load(ide_data_file)
-    #     for ide in data:
-    #         install_ide(**ide, overwrite=True)
+    ide_data_path = args.ide
+    with ide_data_path.open() as ide_data_file:
+        # url pattern: https://download-cdn.jetbrains.com/{lang_code}/{ide_name}-{version}.tar.gz
+        data = json.load(ide_data_file)
+        for ide in data:
+            install_ide(**ide, overwrite=True)
 
     install_mozilla_config()
-
-    print(f'{INFO}INFO: installing espanso.{RESET}')
-    espanso_installer = ASSET_DIR / 'install_espanso.sh'
-    run(['bash', str(espanso_installer)], check=True)
 
     print(f'{INFO}INFO: installing dconf settings.{RESET}')
     with args.config.open() as conf_file:
         config = conf_file.read()
     run(['dconf', 'load', '-f', '/'], text=True, check=True, input=config)
+
+    print(f'{INFO}INFO: installing espanso.{RESET}')
+    espanso_installer = ASSET_DIR / 'install_espanso.sh'
+    run(['bash', str(espanso_installer)], check=True)
 
 
 if __name__ == '__main__':

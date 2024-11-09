@@ -727,22 +727,22 @@ def main(args):
     attachments = (
         ('Privat/Tech/Server/Server - Bydlo', 'id_bydlo', ssh_dir),
         ('Privat/Tech/Server/Server - Schmuyle', 'id_schmuyle', ssh_dir),
-        ('Privat/Tech/Home/Router', 'id_router', ssh_dir),
+        ('Privat/Tech/Home/Router - OpenWRT', 'id_openwrt', ssh_dir),
         ('Privat/Tech/GitHub', 'id_github', ssh_dir),
         ('Arbeit/Wojtek/Azure', 'id_azure', ssh_dir),
         ('Arbeit/Wojtek/HTW', 'id_htw_rsa', ssh_dir),
     )
 
-    install_keepass_attachments('~/pw.kdbx', attachments)
-    secure_and_add_ssh_keys()
+    # install_keepass_attachments('~/pw.kdbx', attachments)
+    # secure_and_add_ssh_keys()
 
-    # install IDEs
-    ide_data_path = args.ide
-    with ide_data_path.open() as ide_data_file:
-        # url pattern: https://download.jetbrains.com/{lang_code}/{ide_name}-{version}.tar.gz
-        data = json.load(ide_data_file)
-        for ide in data:
-            install_ide(**ide, overwrite=True)
+    # # install IDEs
+    # ide_data_path = args.ide
+    # with ide_data_path.open() as ide_data_file:
+    #     # url pattern: https://download.jetbrains.com/{lang_code}/{ide_name}-{version}.tar.gz
+    #     data = json.load(ide_data_file)
+    #     for ide in data:
+    #         install_ide(**ide, overwrite=True)
 
     install_mozilla_config()
 

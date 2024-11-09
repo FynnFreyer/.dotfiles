@@ -6,7 +6,7 @@
       "text/plain"
     ],
     "categories": [],
-    "url": "https://download.jetbrains.com/cpp/CLion-2023.2.2.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/cpp/CLion-2023.2.2.tar.gz"
   },
   {
     "name": "idea",
@@ -15,7 +15,7 @@
       "text/plain"
     ],
     "categories": [],
-    "url": "https://download.jetbrains.com/idea/ideaIU-2023.2.2.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/idea/ideaIU-2024.2.1.tar.gz"
   },
   {
     "name": "pycharm",
@@ -24,7 +24,7 @@
       "text/plain"
     ],
     "categories": [],
-    "url": "https://download.jetbrains.com/python/pycharm-professional-2023.2.1.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/python/pycharm-professional-2024.2.4.tar.gz"
   },
   {
     "name": "webstorm",
@@ -39,7 +39,7 @@
     "categories": [
       "WebDevelopment"
     ],
-    "url": "https://download.jetbrains.com/webstorm/WebStorm-2023.2.1.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/webstorm/WebStorm-2024.2.1.tar.gz"
   },
   {
     "name": "phpstorm",
@@ -54,7 +54,7 @@
     "categories": [
       "WebDevelopment"
     ],
-    "url": "https://download.jetbrains.com/webide/PhpStorm-2023.2.1.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/webide/PhpStorm-2024.2.1.tar.gz"
   },
   {
     "name": "datagrip",
@@ -66,7 +66,7 @@
     "categories": [
       "Database"
     ],
-    "url": "https://download.jetbrains.com/datagrip/datagrip-2023.2.1.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/datagrip/datagrip-2024.2.1.tar.gz"
   },
   {
     "name": "rustrover",
@@ -75,6 +75,6 @@
       "text/plain"
     ],
     "categories": [],
-    "url": "https://download.jetbrains.com/rustrover/RustRover-232.9921.46.tar.gz"
+    "url": "https://download-cdn.jetbrains.com/rustrover/RustRover-2024.2.5.tar.gz"
   }
 ]

@@ -50,7 +50,6 @@
       "wol"
     ],
     "apt": [
-      "nextcloud-desktop",
       "network-manager-openconnect",
       "haskell-stack",
       "qemu-system-x86",
@@ -128,7 +127,6 @@
         "nautilus-extensions",
         "nautilus-gsconnect",
         "NetworkManager-openconnect-gnome",
-        "nextcloud-client-nautilus",
         "pitivi",
         "remmina",
         "transmission-gtk"

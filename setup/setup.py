@@ -619,7 +619,7 @@ Categories=TextEditor;Development;IDE;Debugger;${categories}
 Comment=Start ${long_name}
 Keywords=Programming;JetBrains
 
-Exec=${home}/.local/bin/${name}.sh
+Exec=${home}/.local/bin/${name}
 Icon=${home}/.local/share/icons/${name}.svg
 Terminal=false
 
@@ -686,7 +686,7 @@ def install_ide(name: str,
         raise FileNotFoundError(f'ERROR: "{ide_home}" does not exist, but no url was passed. Aborting.')
 
     # install, by linking to ~/.local/bin/
-    run(['ln', '-srf', str(ide_home / f'bin/{name}.sh'), str(home / '.local/bin/')], check=True)
+    run(['ln', '-srf', str(ide_home / f'bin/{name}'), str(home / '.local/bin/')], check=True)
     run(['ln', '-srf', str(ide_home / f'bin/{name}.svg'), str(home / '.local/share/icons/')], check=True)
 
     category_string = ';'.join(categories)
@@ -709,7 +709,7 @@ def install_ide(name: str,
 def main(args):
     """ Install everything. """
     setup_spec = SetupPkgSpec(args.packages)
-    setup_spec.install(args.verbose)
+    # setup_spec.install(args.verbose)
 
     print(f'{INFO}INFO: setting up git remote.{RESET}')
     git_setup()
@@ -719,7 +719,7 @@ def main(args):
     with stow_pkg_path.open() as stow_pkg_file, RepoRootManager():
         pkgs = json.load(stow_pkg_file)
         for pkg in pkgs:
-            StowPkgSpec(pkg, '~').install()
+            StowPkgSpec(pkg, '~') #.install()
 
     ssh_dir = clean_path('~/.ssh/')
     ssh_dir.mkdir(exist_ok=True)
@@ -733,8 +733,8 @@ def main(args):
         ('Arbeit/Wojtek/HTW', 'id_htw_rsa', ssh_dir),
     )
 
-    install_keepass_attachments('~/pw.kdbx', attachments)
-    secure_and_add_ssh_keys()
+    #install_keepass_attachments('~/pw.kdbx', attachments)
+    #secure_and_add_ssh_keys()
 
     # # install IDEs
     ide_data_path = args.ide
@@ -742,7 +742,7 @@ def main(args):
         # url pattern: https://download-cdn.jetbrains.com/{lang_code}/{ide_name}-{version}.tar.gz
         data = json.load(ide_data_file)
         for ide in data:
-            install_ide(**ide, overwrite=True)
+            install_ide(**ide, overwrite=False)
 
     install_mozilla_config()
 
@@ -753,7 +753,7 @@ def main(args):
 
     print(f'{INFO}INFO: installing espanso.{RESET}')
     espanso_installer = ASSET_DIR / 'install_espanso.sh'
-    run(['bash', str(espanso_installer)], check=True)
+    #run(['bash', str(espanso_installer)], check=True)
 
 
 if __name__ == '__main__':

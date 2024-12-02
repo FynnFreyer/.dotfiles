@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""
+This generates XML files for background slideshows in GNOME, as discussed `here <https://help.ubuntu.com/community/SlideshowWallpapers>`_ and `here <https://help.gnome.org/admin/system-admin-guide/stable/backgrounds-extra.html.en>`_.
+"""
+
+from argparse import ArgumentParser, Namespace
+from enum import StrEnum
+from itertools import pairwise
+from os import getenv
+from pathlib import Path
+from shutil import copy
+from typing import Sequence
+
+
+XDG_DATA_HOME = Path(getenv("XDG_DATA_HOME", Path.home() / ".local/share")).resolve()
+
+
+class Shading(StrEnum):
+    """How to shade the background color. Possible values are 'horizontal', 'vertical', and 'solid'."""
+
+    HORIZONTAL = "horizontal"
+    VERTICAL = "vertical"
+    SOLID = "solid"
+
+
+class Adjustment(StrEnum):
+    """
+    Determines how background images are rendered.
+    Possible values are 'none', 'wallpaper', 'centered', 'scaled', 'stretched', 'zoom', 'spanned'.
+    """
+
+    NONE = "none"
+    WALLPAPER = "wallpaper"
+    CENTERED = "centered"
+    SCALED = "scaled"
+    STRETCHED = "stretched"
+    ZOOM = "zoom"
+    SPANNED = "spanned"
+
+
+# , parser: ArgumentParser | None = None
+def parse_args(args: list[str] | None = None) -> Namespace:
+    parser = ArgumentParser(
+        description="generate an XML file to display a background slideshow on GNOME desktops",
+        epilog="this needs at least two files to generate a proper XML slideshow",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--transition",
+        type=float,
+        default=2,
+        help="transition duration in seconds, defaults to 2",
+    )
+    parser.add_argument(
+        "-d",
+        "--duration",
+        type=float,
+        default=1800,
+        help="image display duration in seconds, defaults to 1800",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--copy",
+        action="store_true",
+        help="copy pictures to a slideshow directory to avoid problems when moving files, default behaviour is to not copy",
+    )
+
+    parser.add_argument(
+        "--dark",
+        metavar="DARK_FILE",
+        type=Path,
+        nargs="+",
+        help="an alternative image file to be displayed when dark mode is active",
+    )
+
+    parser.add_argument(
+        "files",
+        metavar="FILE",
+        type=Path,
+        nargs="+",
+        help="an image file",
+    )
+
+    parser.add_argument(
+        "-n",
+        "--name",
+        default="Slideshow",
+        help="slideshow name, defaults to 'Slideshow'",
+    )
+    parser.add_argument(
+        "--shading",
+        type=Shading,
+        default=Shading.SOLID,
+        help="how to shade the background color (one of 'horizontal', 'vertical', and 'solid'), defaults to 'solid'",
+    )
+
+    parser.add_argument(
+        "-a",
+        "--adjustment",
+        type=Adjustment,
+        default=Adjustment.ZOOM,
+        help="how images are rendered (one of 'none', 'wallpaper', 'centered', 'scaled', 'stretched', 'zoom', 'spanned'), defaults to 'zoom'",
+    )
+
+    parser.add_argument(
+        "--primary-color",
+        default="#ffffff",
+        help="HTML color code for the primary color, defaults to '#ffffff' (white)",
+    )
+
+    parser.add_argument(
+        "--secondary-color",
+        default="#000000",
+        help="HTML color code for the secondary color, defaults to '#000000' (black)",
+    )
+
+    return parser.parse_args(args)
+
+
+TRANSITION_TMPL = """\
+  <transition>
+    <duration>{duration:.2f}</duration>
+    <from>{from_file}</from>
+    <to>{to_file}</to>
+  </transition>\
+"""
+
+IMG_TMPL = """\
+  <static>
+    <duration>{duration:.2f}</duration>
+    <file>{img_file}</file>
+  </static>\
+"""
+
+XML_TMPL = "<background>\n{data}\n</background>"
+
+
+def generate_slideshow(
+    files: Sequence[str | Path], display_duration: float, transition_duration: float
+) -> str:
+    backgrounds = {}
+    for file in files:
+        img_file = Path(file).resolve()
+        background = IMG_TMPL.format(img_file=img_file, duration=display_duration)
+        backgrounds[file] = background
+
+    data = []
+    for i, ((from_file, from_background), (to_file, to_background)) in enumerate(
+        pairwise(backgrounds.items())
+    ):
+        transition = TRANSITION_TMPL.format(
+            from_file=from_file, to_file=to_file, duration=transition_duration
+        )
+        extensions = [transition, to_background]
+        if i == 0:
+            extensions = [from_background, *extensions]
+        data.extend(extensions)
+    data_string = "\n".join(data)
+    return XML_TMPL.format(data=data_string)
+
+
+PROPERTIES_TMPL = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>{name}</name>
+    <filename>{file}</filename>{dark_config}
+    <options>{adjustment}</options>
+    <shade_type>{shading}</shade_type>
+    <pcolor>{primary_color}</pcolor>
+    <scolor>{secondary_color}</scolor>
+  </wallpaper>
+</wallpapers>\
+"""
+
+
+def setup_folders(args: Namespace):
+    backgrounds_dir = XDG_DATA_HOME / "backgrounds"
+    backgrounds_dir.mkdir(exist_ok=True)
+
+    properties_dir = XDG_DATA_HOME / "gnome-background-properties"
+    properties_dir.mkdir(exist_ok=True)
+
+    try:
+        slideshow_dir = backgrounds_dir / args.name.lower()
+        slideshow_dir.mkdir(exist_ok=False)
+    except FileExistsError as e:
+        raise SystemExit(
+            f"A slideshow with the name '{args.name}' already exists"
+        ) from e
+
+    return properties_dir, slideshow_dir
+
+
+def copy_files(files: Sequence[Path], slideshow_directory: Path) -> Sequence[Path]:
+    slideshow_directory.mkdir(exist_ok=True)
+    copies = []
+    for file in files:
+        dest = slideshow_directory / file.name
+        copy(file, dest)
+        copies.append(dest)
+    return copies
+
+
+def generate_properties(
+    properties_dir: Path,
+    slideshow_file: Path,
+    dark_slideshow_file: Path | None,
+    name: str,
+    adjustment: Adjustment,
+    shading: Shading,
+    primary_color: str,
+    secondary_color: str,
+) -> str:
+    dark_config = ""
+    if dark_slideshow_file is not None:
+        dark_config = f"\n    <filename-dark>{dark_slideshow_file}</filename-dark>"
+
+    properties_data = PROPERTIES_TMPL.format(
+        name=name,
+        file=slideshow_file,
+        dark_config=dark_config,
+        adjustment=adjustment,
+        shading=shading,
+        primary_color=primary_color,
+        secondary_color=secondary_color,
+    )
+    return properties_data
+
+
+def main():
+    args = parse_args()
+
+    properties_dir, slideshow_dir = setup_folders(args)
+
+    files = args.files
+    dark_files = args.dark or []
+    if args.copy:
+        light_dest = slideshow_dir
+        dark_dest = slideshow_dir
+        if dark_files:
+            light_dest = slideshow_dir / "light"
+            dark_dest = slideshow_dir / "dark"
+        files = copy_files(files, light_dest)
+        dark_files = copy_files(dark_files, dark_dest)
+
+    slideshow_data = generate_slideshow(files, args.duration, args.transition)
+    slideshow_file = slideshow_dir / (args.name + ".xml")
+    with slideshow_file.open("w") as file:
+        # print("Write:", slideshow_data, f"to {slideshow_file}", sep="\n")
+        file.write(slideshow_data)
+
+    dark_slideshow_file = None
+    if dark_files:
+        dark_slideshow_data = generate_slideshow(
+            dark_files, args.duration, args.transition
+        )
+        dark_slideshow_file = slideshow_dir / (args.name + "-dark.xml")
+        with dark_slideshow_file.open("w") as file:
+            # print("Write:", dark_slideshow_data, f"to {dark_slideshow_file}", sep="\n")
+            file.write(dark_slideshow_data)
+
+    properties_data = generate_properties(
+        properties_dir,
+        slideshow_file,
+        dark_slideshow_file,
+        args.name,
+        args.adjustment,
+        args.shading,
+        args.primary_color,
+        args.secondary_color,
+    )
+    properties_file = properties_dir / (args.name + "-slideshow.xml")
+    with properties_file.open("w") as file:
+        # print("Write:", properties_data, f"to {properties_file}", sep="\n")
+        file.write(properties_data)
+
+
+if __name__ == "__main__":
+    main()

@@ -36,3 +36,10 @@
 	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
 	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
 	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
+	directory = QCurchin
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential

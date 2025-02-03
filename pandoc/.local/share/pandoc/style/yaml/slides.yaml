@@ -2,7 +2,6 @@
 aspectratio: 169
 theme: default
 colortheme: dove
-navigation: frame
 
 # make sure to reset these base settings
 geometry:
@@ -12,3 +11,4 @@ geometry:
 # larger font for slides
 fontsize: 14pt
 ---
+

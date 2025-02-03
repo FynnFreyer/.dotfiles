@@ -1,10 +1,21 @@
-to: beamer
+verbosity: INFO
+fail-if-warnings: false
+log-file: ${HOME}/.local/state/pandoc/pandoc.log
 
-defaults:
-  - base.yaml
+to: beamer
+slide-level: 0
 
 metadata-files:
   - ${.}/../style/yaml/slides.yaml
+  - ${.}/../style/yaml/links.yaml
 
 include-in-header:
   - ${.}/../style/tex/slides.tex
+  - ${.}/../style/tex/centered_figs.tex
+
+filters:
+  - ${.}/../filters/plantuml.py
+  - ${.}/../filters/mermaid.py
+
+citeproc: true
+csl: ${.}/../style/citations/ieee.csl

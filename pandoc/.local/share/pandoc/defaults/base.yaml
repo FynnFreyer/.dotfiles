@@ -20,4 +20,3 @@ filters:
 
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl
-

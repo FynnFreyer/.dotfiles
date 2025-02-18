@@ -1,5 +1,5 @@
 from xonsh.built_ins import XSH
-from xonsh.ptk_shell.key_bindings import tab_insert_indent
+from xonsh.shells.ptk_shell.key_bindings import tab_insert_indent
 
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition, EmacsInsertMode, ViInsertMode

@@ -49,6 +49,11 @@
       "{A23E4120-431F-4753-AE53-5D028C42CFDC}": {
         "installation_mode": "normal_installed",
         "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/threadvis/latest.xpi"
+      },
+
+      "ntfntf@dan-sullivan.co.uk": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.thunderbird.net/thunderbird/downloads/latest/ntfntf/latest.xpi"
       }
     }
   }

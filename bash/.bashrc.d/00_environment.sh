@@ -1,8 +1,14 @@
+# explicitly set xdg base dirs
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+# add user binaries, libs and includes to search PATHs
 BIN_DIRS="$HOME/.local/bin:$HOME/bin"
 LIB_DIRS="$HOME/.local/lib"
 INCLUDE_DIRS="$HOME/.local/include"
 
-# add user binaries, libs and includes to search PATHs
 if ! [[ "$PATH" =~ $BIN_DIRS ]]; then
     export PATH="$BIN_DIRS:$PATH"
 fi
@@ -14,14 +20,6 @@ fi
 if ! [[ "$CPATH" =~ $INCLUDE_DIRS ]]; then
     export CPATH="$INCLUDE_DIRS:$CPATH"
 fi
-
-# add cargo bin
-if [[ -d "$HOME/.cargo/bin" ]]; then
-    export PATH="$PATH:$HOME/.cargo/bin"
-fi
-
-# set lv2-plugin search path for ardour
-export LV2_PATH=/home/fynn/Documents/Projekte/Ardour/Ardour_Plugins/
 
 LESS_VERSION=$(less -V | grep "less [0-9]" | cut -d" " -f2)
 # some flags (e.g., incsearch) are only supported in modern versions

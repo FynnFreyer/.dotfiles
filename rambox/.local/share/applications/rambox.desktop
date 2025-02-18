@@ -5,7 +5,10 @@ Version=1.0
 
 Name=Rambox
 
-Exec=/home/fynn/.local/bin/Rambox.AppImage
+# previously installed via appimage
+#Exec=/home/fynn/.local/bin/Rambox.AppImage
+
+Exec=/usr/bin/rambox
 Icon=/home/fynn/.local/share/icons/rambox.png
 Terminal=false
 

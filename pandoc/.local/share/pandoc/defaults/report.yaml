@@ -1,6 +1,6 @@
 defaults:
   - base.yaml
-  - admonitions.yaml  # defines fenced div admonition blocks
+  - pageenvs.yaml  # defines environments for use via fenced divs
 
 metadata-files:
   - ${.}/../style/yaml/dense.yaml

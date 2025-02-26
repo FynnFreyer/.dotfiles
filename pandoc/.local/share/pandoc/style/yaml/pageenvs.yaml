@@ -1,5 +1,6 @@
 ---
 pandoc-latex-environment:
+  landscape: [landscape]
   tcolorbox: [box]
   info-box: [info]
   warning-box: [warning]

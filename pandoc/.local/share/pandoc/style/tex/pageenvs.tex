@@ -1,6 +1,7 @@
-% define admonition styles
-\usepackage{tcolorbox}
-\tcbuselibrary{skins}
+\usepackage{pdflscape} % for landscape environment
+\usepackage{tcolorbox} % for colorbox environments
+
+\tcbuselibrary{skins} % allows using advanced params
 
 % set common options, doesn't affect nested boxes
 \tcbset{
@@ -9,6 +10,7 @@
     top=0mm,  % less distance between title and text
 }
 
+% define admonition styles
 \newtcolorbox{aside-box}{
     title=Side Note,
     colback=gray!10!white,

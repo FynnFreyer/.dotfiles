@@ -1,0 +1,36 @@
+# allows using different latex environments with fenced divs
+#
+# this should be imported by other default files rather than used directly
+# import works via the `defaults:` key
+#
+# admonition blocks like info, warning or error
+# e.g.:
+#
+#   ::: info
+#   This is an info bubble!
+#   :::
+#
+# landscape can be used to create landscape pages
+# may only be assumed to work for PDF output
+# e.g.:
+#
+#   ::: landscape
+#   | Some | long | table | with | lots | and | lots | and | more | ... | data | 
+#   | ---- | ---- | ----- | ---- | ---- | --- | ---- | --- | ---- | ... | ---- | 
+#	| this | data | table | will | disp | lay | in   | lan | dscp | ... | e    |
+#   ...
+#   :::
+#
+
+metadata-files:
+  - ${.}/../style/yaml/pageenvs.yaml
+
+include-in-header:
+  - ${.}/../style/tex/pageenvs.tex
+
+# TODO: should this be vendored in?
+#   needs to be installed via `pipx install pandoc-latex-environment`
+#   https://github.com/chdemko/pandoc-latex-environment
+filters:
+  - pandoc-latex-environment
+

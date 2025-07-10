@@ -1,13 +1,36 @@
 \usepackage{pdflscape} % for landscape environment
-\usepackage{tcolorbox} % for colorbox environments
+\usepackage[most]{tcolorbox} % for colorbox environments
 
-\tcbuselibrary{skins} % allows using advanced params
+%\tcbuselibrary{skins} % allows using advanced params
 
 % set common options, doesn't affect nested boxes
 \tcbset{
     parbox=false,  % make paragraph spacing normal
     skin=enhanced,  % enable tikz code for graphics
     top=0mm,  % less distance between title and text
+}
+
+% unstyled box for usage with raster
+\newtcolorbox{plain-box}{
+  enhanced,
+  sharp corners,
+  boxrule=0pt,       % no border line
+  colframe=white,    % frame color (white = invisible on white paper)
+  colback=white,     % background color
+  boxsep=0pt,        % no separation between content and box edge
+  left=1em,          % set internal padding
+  right=1em,
+  top=2ex,
+  bottom=2ex
+}
+
+\newtcolorbox{frame-box}[1][black]{%
+  enhanced,
+  sharp corners,
+  boxrule=0.5pt,     % visible thin border
+  colframe=#1,       % user-specified or default frame color
+  colback=white,     % background color (change if needed)
+  boxsep=5pt         % padding; tweak as desired
 }
 
 % define admonition styles
@@ -40,4 +63,24 @@
     colback=blue!10!white,
     colframe=blue!60!black
 }
+
+
+% raster environments to generate rows and cols
+\newenvironment{raster-two-cols}{%
+	\begin{plain-box}%
+	\begin{tcbraster}[raster columns=2,
+					  raster valign=top,
+					  raster width=0.9\textwidth,
+					  nobeforeafter]%
+}{%
+	\end{tcbraster}%
+	\end{plain-box}%
+}
+
+\newenvironment{col}{%
+	\begin{plain-box}%
+}{%
+	\end{plain-box}%
+}
+
 

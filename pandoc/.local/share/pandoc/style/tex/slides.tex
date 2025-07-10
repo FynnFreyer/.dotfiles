@@ -1,13 +1,43 @@
 \usefonttheme{default}
 
+% Increase spacing between lines (verbatim is forced to 1 somewhere else)
+\linespread{1.2}
+
+\usepackage{etoolbox}
+
+% Adjust spacing between lists and following blocks (e.g. verbatim)
+\newlength{\afterlistsep}
+\setlength{\afterlistsep}{.5em}  % Adjust the space here
+
+% Command to add vertical space if at the outermost level
+\makeatletter
+\newcommand{\addoutermostlistvspace}[1]{%
+  \ifnum\@listdepth<2
+    \vspace{#1}
+  \fi
+}
+\makeatother
+
+% Use etoolbox to add vertical space after itemize/enumerate
+\AtEndEnvironment{itemize}{\addoutermostlistvspace{\afterlistsep}}
+\AtEndEnvironment{enumerate}{\addoutermostlistvspace{\afterlistsep}}
+
+% Uncomment this to add vspace before itemize/enumerate as well
+%\newlength{\beforelistsep}
+%\setlength{\beforelistsep}{.5em}  % Adjust the space here
+
+%\AtBeginEnvironment{itemize}{\addoutermostlistvspace{\beforelistsep}}
+%\AtBeginEnvironment{enumerate}{\addoutermostlistvspace{\beforelistsep}}
+
+% Set the font for quotes
 \ifdef{\setbeamerfont}{
     % use small caps for quotes
-    \setbeamerfont{quote}{shape=\scshape}
+    %\setbeamerfont{quote}{shape=\scshape}
 }{}
 
+% Set the quote coloring
 \ifdef{\setbeamercolor}{
-    % coloring for quotes
-    \setbeamercolor{quote}{fg=white,bg=black}
+    \setbeamercolor{quote}{fg=black,bg=white}
 }{}
 
 \ifdef{\setbeamertemplate}{

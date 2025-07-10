@@ -4,6 +4,8 @@ verbosity: INFO
 fail-if-warnings: false
 log-file: ${HOME}/.local/state/pandoc/pandoc.log
 
+pdf-engine: xelatex
+
 metadata-files:
   - ${.}/../style/yaml/a4.yaml
   - ${.}/../style/yaml/links.yaml
@@ -18,5 +20,9 @@ filters:
   - ${.}/../filters/plantuml.py
   - ${.}/../filters/mermaid.py
 
+syntax-definition:
+  - ${.}/../syntax/terminal.xml
+
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl
+

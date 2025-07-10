@@ -1,0 +1,106 @@
+#!/usr/bin/env -S fontforge -lang=py
+
+import fontforge
+import sys
+
+from pathlib import Path
+from typing import Collection
+
+
+def parse_args(args: list[str] | None = None) -> tuple[str, str]:
+    """Parse the arguments and compute input and output names."""
+    if args is None:
+        args = sys.argv
+
+    input_file = args[1]
+    if len(args) > 2:
+        output_file = args[2]
+    else:
+        output_file = clean_name(input_file)
+
+    return input_file, ensure_suffix(output_file)
+
+
+def ensure_suffix(file_name: str, suffix: str = "otf") -> str:
+    has_suffix = file_name.endswith(f".{suffix}")
+    if has_suffix:
+        return file_name
+    # remove potential ttf suffix
+    base_name, *_ = file_name.rsplit(".", 1)
+    return f"{base_name}.{suffix}"
+
+
+def _clean_suffixes(font_style: str, suffixes: Collection[str]) -> str:
+    # remove additional suffixes
+    style_trim = None  # init for trimming
+    for suffix in suffixes:
+        # suffixes might have leading spaces
+        style_trim = font_style if style_trim is None else style_trim
+        style_trim = style_trim.lstrip()
+        if style_trim.startswith(suffix):
+            print("HI:", style_trim, suffix)
+            font_style = style_trim[len(suffix):]
+    return font_style
+
+
+def clean_name(
+    name: str,
+    marker: str = "NerdFont",
+    suffixes: None | Collection[str] = None
+) -> str:
+    """
+    Remove "NerdFontMono" and "NerdFontPropo" parts from a file-, family- or
+    fontname.
+    """
+    start = name.find(marker)
+    if start != -1:
+        end = start + len(marker)
+        # extract font name and style parts
+        font_name = name[0:start]
+        font_style = name[end:]
+
+        if suffixes:
+            font_style = _clean_suffixes(font_style, suffixes)
+
+        # put parts back together
+        name = font_name + font_style
+    return name
+
+
+def patch_name(font: fontforge.font, attr_name: str, marker: str) -> fontforge.font:
+    attr = getattr(font, attr_name)
+    patched = clean_name(attr, marker=marker)
+    if attr != patched:
+        print(f"{attr_name}:", attr, "->", patched)
+        setattr(font, attr_name, patched)
+    return font
+
+
+def clean_font_name(font: fontforge.font) -> fontforge.font:
+    full_marker = " Nerd Font"
+    short_marker = "NF"
+
+    font = patch_name(font, "familyname", full_marker)
+    font = patch_name(font, "fullname", full_marker)
+    font = patch_name(font, "fontname", short_marker)
+
+    return font
+
+def main():
+    input_file, output_file = parse_args()
+
+    # Open the TTF file
+    font = fontforge.open(input_file)
+
+    # Correct the font name if necessary
+    font = clean_font_name(font)
+    
+    # Generate the OTF file
+    font.generate(output_file)
+
+    # Close the font
+    font.close()
+
+
+if __name__ == "__main__":
+    main()

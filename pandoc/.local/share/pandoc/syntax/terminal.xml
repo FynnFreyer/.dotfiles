@@ -1,0 +1,27 @@
+<!--
+  Syntax highlighting for Bash with "$" or "#" prompt prefixes and
+  unformatted outputs.
+
+  Depends on the Bash syntax definition by Wilbert Berendsen (wilbert@kde.nl),
+  which is distributed under the LGPL, and can be found on GitHub at:
+  https://raw.githubusercontent.com/KDE/syntax-highlighting/master/data/syntax/bash.xml
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="Prompted Bash Terminal" version="1" kateversion="5.53" section="Sources" author="Fynn Freyer (fynn.freyer@googlemail.com)" license="LGPL" style="terminal">
+  <highlighting>
+    <contexts>
+      <context name="terminal">
+        <Detect2Chars attribute="Prompt"     context="BashOneLine##Bash" char="$" char1=">" firstNonSpace="true" />
+        <DetectChar   attribute="Prompt"     context="BashOneLine##Bash" char="$"           firstNonSpace="true" />
+        <Detect2Chars attribute="RootPrompt" context="BashOneLine##Bash" char="#" char1=">" firstNonSpace="true" />
+        <DetectChar   attribute="RootPrompt" context="BashOneLine##Bash" char="#"           firstNonSpace="true" />
+        <RegExpr attribute="Normal" String="^.*$" />
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Prompt"     defStyleNum="dsSpecialString" />
+      <itemData name="RootPrompt" defStyleNum="dsWarning" />
+      <itemData name="Normal"     defStyleNum="dsNormal" />
+    </itemDatas>
+  </highlighting>
+</language>

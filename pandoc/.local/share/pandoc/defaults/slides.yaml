@@ -5,17 +5,24 @@ log-file: ${HOME}/.local/state/pandoc/pandoc.log
 to: beamer
 slide-level: 0
 
+pdf-engine: xelatex
+
 metadata-files:
   - ${.}/../style/yaml/slides.yaml
   - ${.}/../style/yaml/links.yaml
+  - ${.}/../style/yaml/font.yaml
 
 include-in-header:
   - ${.}/../style/tex/slides.tex
   - ${.}/../style/tex/centered_figs.tex
+  - ${.}/../style/tex/soft_wrapped_code.tex
 
 filters:
   - ${.}/../filters/plantuml.py
   - ${.}/../filters/mermaid.py
+
+syntax-definition:
+  - ${.}/../syntax/terminal.xml
 
 citeproc: true
 csl: ${.}/../style/citations/ieee.csl

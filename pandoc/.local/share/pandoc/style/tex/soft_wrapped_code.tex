@@ -19,9 +19,10 @@
 \renewenvironment{verbatim}
   {
     \VerbatimEnvironment%
-    \begin{Verbatim}[breaklines,breakanywhere,commandchars=\\\{\}]%
+    \begin{Verbatim}[breaklines,breakanywhere,commandchars=\\\{\},baselinestretch=1]%
   }
   {\end{Verbatim}}
+
 % ensure codeblocks don't cross page boundaries
 \BeforeBeginEnvironment{verbatim}{\begin{samepage}}
 \AfterEndEnvironment{verbatim}{\end{samepage}}
@@ -29,5 +30,5 @@
 % same, but applies if highlighting is used
 \BeforeBeginEnvironment{Highlighting}{\begin{samepage}}
 \AfterEndEnvironment{Highlighting}{\end{samepage}}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\},baselinestretch=1}
 

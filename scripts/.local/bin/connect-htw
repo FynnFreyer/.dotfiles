@@ -10,7 +10,7 @@ trap 'if $HEED_INT; then exit 2; fi' INT
 
 # IFS=$'\n\t'
 
-# set -xv  # uncomment for debugging
+set -xv  # uncomment for debugging
 cleanup() {
     ret_code=$?
 
@@ -24,8 +24,8 @@ cleanup() {
 	    fi
 	    $VERBOSE && echo "Bye!"
 	fi
-	
-    # set +xv  # uncomment for debugging
+
+    set +xv  # uncomment for debugging
 
     exit $ret_code
 }
@@ -72,12 +72,12 @@ DESCRIPTION
 
     This script uses $(printf "\e]8;;https://wiki.archlinux.org/title/OpenConnect\aOpenConnect\e]8;;\a") to connect to the Cisco-VPN securing the
     HTW-network.
-    
+
     This script depends on the ip and openconnect commands, so these need to be
     available in your PATH. Also, for setting up and using a $(printf "\e]8;;https://en.wikipedia.org/wiki/TUN/TAP\aTUN\e]8;;\a") device admin
     rights are required. When connecting to the management network, the $(printf "\e]8;;https://github.com/cernekee/ocproxy\aocproxy\e]8;;\a")
     command is needed as well.
-    
+
     Both openconnect and ocproxy are available in the fedora package repos.
 
 OPTIONS
@@ -192,7 +192,7 @@ teardown_tun() {
 
 ask_auth() {
     # get auth info
-    
+
     # if no user was set, we ask for one
     if [[ -z $USER ]]; then
         IFS= read -rp 'Username: ' USER
@@ -265,12 +265,18 @@ connect_man() {
         --passwd-on-stdin \
         --user="${USER}" \
         --interface="${DEVICE}" \
-        --server="${URL}" < $PW_PIPE
+        --server="${MAN_URL}" < $PW_PIPE
 }
 
 connect() {
     # TODO switching logic depending on MAN
-    connect_htw
+    if $MAN; then
+        echo man
+        connect_man
+    else
+        echo not man
+        connect_htw
+    fi
 }
 
 main() {

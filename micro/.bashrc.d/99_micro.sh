@@ -1,1 +1,1 @@
-alias nano=micro
+#alias nano=micro

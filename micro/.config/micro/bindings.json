@@ -1,6 +1,7 @@
-{
-    "Alt-/": "lua:comment.comment",
-    "Alt-MouseLeft": "MouseMultiCursor",
-    "Ctrl-Alt-l": "lua:initlua.pyfmtlnt",
-    "CtrlUnderscore": "lua:comment.comment"
-}
+#{
+#    # "Ctrl-e": "",
+#    "Alt-/": "lua:comment.comment",
+#    "Alt-MouseLeft": "MouseMultiCursor",
+#    "Ctrl-Alt-l": "lua:initlua.pyfmtlnt",
+#    "CtrlUnderscore": "lua:comment.comment"
+#}

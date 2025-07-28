@@ -1,10 +1,10 @@
-{
-    "*.sh": {
-        "tabstospaces": false
-    },
-    "Makefile": {
-        "tabstospaces": false
-    },
-    "colorscheme": "bubblegum",
-    "tabstospaces": true
-}
+#{
+#    "*.sh": {
+#        "tabstospaces": false
+#    },
+#    "Makefile": {
+#        "tabstospaces": false
+#    },
+#    "colorscheme": "bubblegum",
+#    "tabstospaces": true
+#}

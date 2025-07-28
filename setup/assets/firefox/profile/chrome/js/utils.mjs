@@ -16,11 +16,11 @@ export class Injector {
      * @param {string[]} scripts An array of chrome URIs of scripts.
      * @param {boolean} cache Whether to use the cache or not.     */
     constructor(scripts, cache = false) {
-        // console.debug("Creating Injector")
+        console.debug("Creating Injector")
         this.scripts = scripts
         this.cache = cache
         this.#init()
-        // console.debug("Created Injector")
+        console.debug("Created Injector")
     }
 
     /**
@@ -28,10 +28,10 @@ export class Injector {
      */
     #init() {
         if (!Services.appinfo.inSafeMode) {
-            // console.debug("Attaching observer for domwindowopened event")
+            console.debug("Attaching observer for domwindowopened event")
             Services.obs.addObserver(this, 'domwindowopened', false)
         } else {
-            // console.debug(`${APP_NAME} was started in safe mode, not attaching userscripts`)
+            console.debug(`${APP_NAME} was started in safe mode, not attaching userscripts`)
         }
     }
 
@@ -41,14 +41,14 @@ export class Injector {
      * @param {Document} document The document that was loaded.
      */
     #onDOMContentLoaded(document) {
-        // console.debug("DOMContentLoaded received", document)
+        console.debug("DOMContentLoaded received", document)
         const window = document.defaultView
         const window_uri = window.location.href
 
         // Don't inject scripts to modal prompt windows or notifications
         const ignore_regex = /^chrome:(?!\/\/global\/content\/(commonDialog|alerts\/alert)\.xhtml)|about:(?!blank)/i
         if (!ignore_regex.test(window_uri)) {
-            // console.debug(`Ignoring page ${window_uri} for script injection`)
+            console.debug(`Ignoring page ${window_uri} for script injection`)
             return
         }
 
@@ -65,14 +65,14 @@ export class Injector {
     #injectClassicScript(script, window) {
         const window_uri = window.location.href
         try {
-            // console.debug(`Try to inject classic script: ${script} into ${window_uri}`)
+            console.debug(`Try to inject classic script: ${script} into ${window_uri}`)
 
             const uri = Services.io.newURI(script)
             Services.scriptloader.loadSubScriptWithOptions(uri.spec, {
                 target: window, ignoreCache: !this.cache,
             })
 
-            // console.debug(`Successfully injected classic script: ${script} into ${window_uri}`)
+            console.debug(`Successfully injected classic script: ${script} into ${window_uri}`)
             // not sure why we return this promise here, but this is how MrOtherGuy did it, I think
             return Promise.resolve(1)
         } catch (e) {
@@ -90,7 +90,7 @@ export class Injector {
      * @param data
      */
     observe(subject, topic, data) {
-        // console.debug("Called observe with parameters:", subject, topic, data)
+        console.debug("Called observe with parameters:", subject, topic, data)
         subject.addEventListener('DOMContentLoaded', this, true)
     }
 
@@ -101,7 +101,7 @@ export class Injector {
      * @param {Event} event The `DOMContentLoaded` event.
      */
     handleEvent(event) {
-        // console.debug("Event received", event)
+        console.debug("Event received", event)
 
         switch (event.type) {
             case "DOMContentLoaded":
@@ -122,14 +122,14 @@ export class Injector {
     //  * @returns {Promise<unknown>} After this, the browser has started.
     //  */
     // static #startupFinished() {
-    //     // console.debug("Waiting for startup to finish")
+    //     console.debug("Waiting for startup to finish")
     //     let session_restored = false
     //     return new Promise(resolve => {
     //         if (session_restored) {
-    //             // console.debug("Startup finished")
+    //             console.debug("Startup finished")
     //             resolve()
     //         } else {
-    //             // console.debug("Attaching observer for session restore")
+    //             console.debug("Attaching observer for session restore")
     //             const obs_topic = IS_FF
     //                 ? "sessionstore-windows-restored"
     //                 : "browser-delayed-startup-finished"
@@ -137,7 +137,7 @@ export class Injector {
     //                 Services.obs.removeObserver(observer, obs_topic)
     //                 session_restored = true
     //                 resolve()
-    //                 // console.debug("Session was restored and observer removed itself")
+    //                 console.debug("Session was restored and observer removed itself")
     //             }
     //             Services.obs.addObserver(observer, obs_topic)
     //         }
@@ -146,10 +146,10 @@ export class Injector {
     //
     // NOTE: use like so
     //
-    // // console.debug("Awaiting startup")
+    // console.debug("Awaiting startup")
     // const startup = Promise.resolve(Injector.#startupFinished)
     // startup.then(() => {
-    //     // console.debug("Doing the thing")
+    //     console.debug("Doing the thing")
     // }).catch(ex => console.error("Failed to await startup:", ex))
 
 }

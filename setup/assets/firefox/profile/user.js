@@ -8,13 +8,14 @@ user_pref("svg.context-properties.content.enabled", true);  // apply theme color
 // additional privacy settings
 user_pref("privacy.fingerprintingProtection", true);
 user_pref("privacy.resistFingerprinting", true);
+user_pref("privacy.resistFingerprinting.exemptedDomains", "*.lan,*.fynns.site,*.netflix.com,*.zoom.us");
 
 // tabbing behaviour
 user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
 
 // optionally check whether scripts should be active
 // check needs to be implemented in the loader
-// user_pref("userChromeJS.enabled", true);
+user_pref("userChromeJS.enabled", true);
 // user_pref("userChromeJS.scriptsDisabled", "");
 
 // enable browser debugging
@@ -26,7 +27,9 @@ user_pref("devtools.debugger.prompt-connection", false);
 // fixes dragging issue on GNOME
 // Cf. https://www.reddit.com/r/FirefoxCSS/comments/12h5q6j/cant_rearrange_tabs_with_tree_style_tab_full/
 // and https://bugzilla.mozilla.org/show_bug.cgi?id=1818517
-user_pref("widget.gtk.ignore-bogus-leave-notify", 1);  // TODO remove once bug is fixed
+// TODO: remove once bug is fixed
+//       last checked on 2025-03-20
+user_pref("widget.gtk.ignore-bogus-leave-notify", 1);
 
 // allow http on localhost
 user_pref("browser.fixup.fallback-to-https", false);

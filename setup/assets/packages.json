@@ -96,7 +96,6 @@
     "xonsh[full]",
     "xonsh-direnv",
     "xontrib-argcomplete",
-    "xontrib-init-ssh-agent",
     "xontrib-kitty",
     "xontrib-makefile_complete",
     "xontrib-vox"

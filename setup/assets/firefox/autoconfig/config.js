@@ -6,6 +6,6 @@ try {
 
     if (cmanifest.exists()) {
         Components.manager.QueryInterface(Ci.nsIComponentRegistrar).autoRegister(cmanifest);
-        ChromeUtils.importESModule('chrome://userchrome/content/loader.mjs');
+        ChromeUtils.importESModule('chrome://userchromejs/content/loader.mjs');
     }
-} catch (ex) {}
+} catch (ex) {};

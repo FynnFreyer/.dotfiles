@@ -1,6 +1,8 @@
+console.log('FYNN loader.mjs')
+
 import {Injector} from "chrome://userchrome/content/js/utils.mjs"
 
-// console.debug('Loading userscripts')
+console.debug('Loading userscripts')
 
 // only load predefined userscripts in the correct directory
 const chrome_prefix = "chrome://userchrome/content/js/"
@@ -11,4 +13,4 @@ const scripts = [
 ].map(script => chrome_prefix + script)
 
 const injector = new Injector(scripts)
-// console.debug('Successfully created userscript injector')
+console.debug('Successfully created userscript injector')

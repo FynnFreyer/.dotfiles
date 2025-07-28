@@ -81,3 +81,42 @@ find_dir_in_tarball() {
     # find the FIRST directory (or file) in a tarball
     tar tzf "${1}" | head -1 | cut -f1 -d/
 }
+
+wrap_text() {
+    # Default values for width and indent
+    local width=80
+    local indent=10
+
+    # Check if width and indent are provided as arguments
+    if [ -n "$1" ]; then
+        width="$1"
+    fi
+    if [ -n "$2" ]; then
+        indent="$2"
+    fi
+
+    local pad
+    pad=$(printf '%*s' "$indent")
+
+    while IFS= read -r line; do
+        while [ ${#line} -gt "$width" ]; do
+            # Find the last space within the width limit
+            local i
+            i=$width
+            while [ $i -gt 0 ] && [ "${line:i-1:1}" != " " ]; do
+                ((i--))
+            done
+            if [ $i -eq 0 ]; then
+                # No space found, break at width
+                i=$width
+            fi
+            # Print the wrapped line
+            echo "${line:0:i}"
+            # Update the line to continue from the next character
+            line="${pad}${line:i}"
+        done
+        # Print the last, potentially unwrapped line
+        echo "$line"
+    done
+}
+

@@ -118,7 +118,7 @@ def sync_dotfiles(args, stdin=None):
         host = $(hostname).strip()
         timestamp = $(date -Imin).strip()
         message = f'{host}@{timestamp}'
-        
+
         commit = !(git commit -am @(message))
         valid_messages = ['Your branch is ahead', 'Your branch is up to date']
         wtf = repr(commit)  # it seems to be necessary to evaluate commit at least once, or it won't properly evaluate the output
@@ -141,7 +141,6 @@ def sync_dotfiles(args, stdin=None):
         raise e
     finally:
         os.chdir(work_dir)
-
 
 def xonsh_import(path: str | bytes | os.PathLike | Path = None):
     if path is None:
@@ -299,3 +298,57 @@ def nmcli_device_info():
         info[category] = Category(**attributes)
 
     return DeviceInfo(**info)
+
+
+# PANCOMPILE FUNCS
+
+def get_data_dir() -> Path:
+    """Resolve the XDG data directory."""
+    default = os.path.expanduser("~") + "/.local/share"
+    real = os.getenv("XDG_DATA_DIR", default)
+    return Path(real).resolve()
+
+def _get_default_file_names() -> list[str]:
+    default_files_dir = get_data_dir() / "pandoc/defaults"
+    default_file_names = [f.stem for f in default_files_dir.glob("*.yaml")]
+    return default_file_names
+
+def _get_default_out_name(in_file: str) -> str:
+    in_path = Path(in_file)
+    out_path = Path() / f"{in_path.stem}.pdf"
+    out_file = str(out_path)
+    return out_file
+
+def _pancompile_1arg(in_file: str) -> list[str]:
+    return ["pandoc", "--defaults", "default", in_file, "--out", _get_default_out_name(in_file)]
+
+def _pancompile_2arg(arg1: str, arg2: str) -> list[str]:
+    default_file_names = _get_default_file_names()
+    default_arg = "default"
+    if arg1 in default_file_names and not Path(arg1).exists():
+        default_arg = arg1
+        in_file = arg2
+        out_file = _get_default_out_name(in_file)
+    elif Path(arg1).exists() and arg1 not in default_file_names:
+        in_file = arg1
+        out_file = arg2
+    else:
+       print(arg1, arg2, default_file_names)
+       raise ValueError("Ambiguous args")
+
+    return ["pandoc", "--defaults", default_arg, in_file, "--out", out_file]
+
+def _pancompile_3arg(default_arg: str, in_file: str, out_file: str) -> list[str]:
+    return ["pandoc", "--defaults", default_arg, in_file, "--out", out_file]
+
+@aliases.register
+@aliases.return_command
+def _pancompile(args: list[str]):
+    """Takes file to compile and then, optionally, a default file to pass to pandoc."""
+    match args:
+        case [arg1, arg2, arg3]:
+            return _pancompile_3arg(arg1, arg2, arg3)
+        case [arg1, arg2]:
+            return _pancompile_2arg(arg1, arg2)
+        case [arg1]:
+            return _pancompile_1arg(arg1)

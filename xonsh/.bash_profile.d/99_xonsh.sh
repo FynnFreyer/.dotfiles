@@ -1,10 +1,5 @@
-# exec xonsh
-
-# if [ -f "$HOME/xonsh" ]; then
-#     xonsh="$HOME/xonsh"
-# elif [ -f "$PREFIX/xonsh" ]; then
-#     xonsh="$PREFIX/xonsh"
-# fi
+# auto exec xonsh on login
+return 0  # actually, let's not do that...
 
 if type xonsh; then
     # if we find xonsh in the PATH, we note were

@@ -4,13 +4,13 @@ import sys, os, logging
 
 # similar to https://github.com/xonsh/xonsh/issues/4409 I guess
 import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 $FOREIGN_ALIASES_SUPPRESS_SKIP_MESSAGE = True
 
 # Errors
 #$XONSH_SHOW_TRACEBACK = True
-#$XONSH_TRACEBACK_LOGFILE = $HOME/.xonsh.err
+#$XONSH_TRACEBACK_LOGFILE = p"$HOME/.xonsh.err"
 #$XONSH_DEBUG = 1
 #$XONSH_STDERR_PREFIX = '{BACKGROUND_RED}'
 #$XONSH_STDERR_POSTFIX = '{RESET}'
@@ -21,6 +21,9 @@ if bashrc.exists():
         source-bash --interactive @(bashrc)
     except Exception as e:
         logging.log(logging.WARN, 'sourcing bashrc failed', e)
+
+# $BASH_COMPLETIONS_DIRS = [p'~/.bashrc.d/completions']
+
 
 conf_dir = p'~/.xonshrc.d'.resolve()
 python_conf = conf_dir / 'python'
@@ -37,4 +40,3 @@ if conf_dir.exists():
                     source @(file)
                 except Exception as e:
                     logging.log(logging.WARN, f'sourcing {file} failed', e)
-

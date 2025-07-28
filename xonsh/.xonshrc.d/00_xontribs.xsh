@@ -1,8 +1,8 @@
 xontributions = [
     'argcomplete',
+    'bash_completions_dirs',
     'coreutils',
     'direnv',
-    'init_ssh_agent',
     'kitty',
     'makefile_complete',
     'vox'

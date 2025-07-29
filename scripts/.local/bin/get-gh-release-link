@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+
+from argparse import ArgumentParser, Namespace
+from json import dumps, loads
+from sys import stderr
+from typing import Optional
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+
+
+def parse_args(args: Optional[list[str]] = None) -> Namespace:
+    parser = ArgumentParser(
+        description="Get a download link for the latest release of a particular GitHub repository",
+        epilog="Outputs the link to stdout and exits with code 0 in case of success, or outputs error message to stderr with exit code 1 on failure.",
+    )
+
+    # Adding subcommand to list repo info
+    subparsers = parser.add_subparsers(dest='command')
+    find_link = subparsers.add_parser("find", help="Find a latest release link (the default)")
+    list_assets = subparsers.add_parser("list", help="List all latest release links")
+    
+    # Positional argument for the repository
+    parser.add_argument(
+        "repo",
+        help=f"The GitHub repository to query. "
+             f"Specify as 'owner/repo'. "
+    )
+
+    # Create a 'filters' argument group
+    filters_group = find_link.add_argument_group(
+        "filters",
+        "Filter options for asset names. "
+        "In case of multiple matches, the first matching file is picked. "
+        "An empty string always matches."
+    )
+    
+    # Argument to filter by prefix of asset name
+    filters_group.add_argument(
+        "-p", "--prefix", default="",
+        help=f"The prefix of the release file to pick. "
+             f"Defaults to an empty string."
+    )
+    
+    # Argument to filter by suffix of asset name
+    filters_group.add_argument(
+        "-s", "--suffix", default="",
+        help=f"The suffix of the release file to pick. "
+             f"Defaults to an empty string."
+    )
+
+    return parser.parse_args(args)
+
+
+def get_release_info(repo: str) -> dict:
+    """
+    Get the latest release data for a GitHub repository.
+    
+    :param repo: The GitHub repository to query, specified as 'owner/repo'.
+    :raises ValueError: If the specified repository doesn't exist, or has no releases.
+    :return: The release data for the specified repo as a dictionary.
+    """
+    # GitHub API endpoint for the latest release
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
+
+    # Set a User-Agent header to avoid 403 errors
+    headers = {"User-Agent": "Python-urllib"}
+    
+    try:
+        # Make the HTTP request
+        req = Request(url, headers=headers)
+        with urlopen(req) as response:
+            data = response.read()
+            release_info = loads(data)
+            return release_info
+    except HTTPError as e:
+        raise ValueError(
+            f"Repository '{repo}' doesn't exist, is private, or has no releases yet."
+        ) from e
+
+
+def get_latest_dl_url(repo: str, /, prefix: str = "", suffix: str = "") -> str:
+    """
+    Get the download link for the latest release of a GitHub repository.
+    
+    Allows filtering file names by prefix and suffix. For multiple matches, the
+    first is returned.
+    
+    :param repo: The GitHub repository to query, specified as 'owner/repo'.
+    :param prefix: The prefix of the release file to pick.
+    :param suffix: The suffix of the release file to pick.
+    :raises ValueError: If the specified repository doesn't exist, or has no releases.
+    :raises KeyError: If the latest release doesn't contain files satisfying ``prefix`` and ``suffix``.
+    :return: The download link for the first matched release file as a string.
+    """
+    # Extract the release tag and find the first matching asset
+    release_info = get_release_info(repo)
+    assets = release_info.get("assets", [])
+    dl_url = None
+    for asset in assets:
+        name = asset["name"]
+        matches = name.startswith(prefix) and name.endswith(suffix)
+        if matches:
+            dl_url = asset["browser_download_url"]
+            break
+
+    if dl_url is None:
+        raise KeyError(f"Latest release of '{repo}' didn't contain any files matching prefix '{prefix}' and suffix '{suffix}'.")
+
+    return dl_url
+
+
+def print_err(e: Exception) -> None:
+    """ValueErrors have weird formatting if I don't strip them?!"""
+    msg = str(e).strip('"')
+    print(msg, file=stderr)
+
+
+def print_release_link(args: Namespace) -> int:
+    try:  # Get the download link and output it
+        dl_url = get_latest_dl_url(args.repo, prefix=args.prefix, suffix=args.suffix)
+        print(dl_url)
+        return 0
+    except (ValueError, KeyError) as e:  # No link found
+        print_err(e)
+        return 1
+
+
+def list_release_info(args: Namespace) -> int:
+    try:
+        release_info = get_release_info(args.repo)
+        asset_info = {info["name"]: info["url"] for info in release_info.get("assets", [])}
+        release_string = dumps(asset_info, indent=2)
+        print(release_string)
+        return 0
+    except ValueError as e:
+        print_err(e)
+        return 1
+
+
+def main(args: Optional[list[str]] = None) -> int:
+    args = parse_args(args)
+    cmd = getattr(args, "command", None)
+    if cmd == "list":
+        return list_release_info(args)
+    return print_release_link(args)    
+
+
+if __name__ == "__main__":
+    exit(main())
+

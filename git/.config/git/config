@@ -2,6 +2,7 @@
     path = id/id.config
     path = rerere.config
     path = lfs.config
+    path = diff.config
     path = defaults.config
 
 [init]
@@ -10,7 +11,6 @@
 [core]
     autocrlf = input
     editor = nano
-    pager = less
 
 # [core.whitespace]
 #     tabwidth=4
@@ -26,20 +26,3 @@
 [status]
     relativePaths = false
     branch = true
-[safe]
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = /home/fynn/Desktop/HIV/HIV-Pipeline/src
-	directory = QCurchin
-[credential "https://github.com"]
-	helper = 
-	helper = !/usr/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !/usr/bin/gh auth git-credential

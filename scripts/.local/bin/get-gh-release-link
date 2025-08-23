@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser, Namespace
 from json import dumps, loads
+from re import compile, Pattern
 from sys import stderr
 from typing import Optional
 from urllib.request import Request, urlopen
@@ -26,26 +27,13 @@ def parse_args(args: Optional[list[str]] = None) -> Namespace:
              f"Specify as 'owner/repo'. "
     )
 
-    # Create a 'filters' argument group
-    filters_group = find_link.add_argument_group(
-        "filters",
-        "Filter options for asset names. "
-        "In case of multiple matches, the first matching file is picked. "
-        "An empty string always matches."
-    )
-    
-    # Argument to filter by prefix of asset name
-    filters_group.add_argument(
-        "-p", "--prefix", default="",
-        help=f"The prefix of the release file to pick. "
-             f"Defaults to an empty string."
-    )
-    
-    # Argument to filter by suffix of asset name
-    filters_group.add_argument(
-        "-s", "--suffix", default="",
-        help=f"The suffix of the release file to pick. "
-             f"Defaults to an empty string."
+    # Argument to filter asset name by regex
+    default_regex = r".*"
+    parser.add_argument(
+        "-r", "--regex", type=compile, default=compile(default_regex),
+        help=f"A regular expression, that matches the file name of the release to pick. "
+             f"First match is picked, no matches cause an error exit code. "
+             f"Defaults to '{default_regex}'."
     )
 
     return parser.parse_args(args)
@@ -78,18 +66,16 @@ def get_release_info(repo: str) -> dict:
         ) from e
 
 
-def get_latest_dl_url(repo: str, /, prefix: str = "", suffix: str = "") -> str:
+def get_latest_dl_url(repo: str, /, regex: Pattern = compile(".*")) -> str:
     """
     Get the download link for the latest release of a GitHub repository.
-    
-    Allows filtering file names by prefix and suffix. For multiple matches, the
+    Allows filtering file names by regex. For multiple matches, the
     first is returned.
     
     :param repo: The GitHub repository to query, specified as 'owner/repo'.
-    :param prefix: The prefix of the release file to pick.
-    :param suffix: The suffix of the release file to pick.
+    :param regex: A regular expression to match the release file name.
     :raises ValueError: If the specified repository doesn't exist, or has no releases.
-    :raises KeyError: If the latest release doesn't contain files satisfying ``prefix`` and ``suffix``.
+    :raises KeyError: If no file in the latest release is matched by the passed regex.
     :return: The download link for the first matched release file as a string.
     """
     # Extract the release tag and find the first matching asset
@@ -98,13 +84,13 @@ def get_latest_dl_url(repo: str, /, prefix: str = "", suffix: str = "") -> str:
     dl_url = None
     for asset in assets:
         name = asset["name"]
-        matches = name.startswith(prefix) and name.endswith(suffix)
+        matches = regex.match(name)
         if matches:
             dl_url = asset["browser_download_url"]
             break
 
     if dl_url is None:
-        raise KeyError(f"Latest release of '{repo}' didn't contain any files matching prefix '{prefix}' and suffix '{suffix}'.")
+        raise KeyError(f"Latest release of '{repo}' didn't contain any files matching regex '{str(regex)}'.")
 
     return dl_url
 
@@ -117,7 +103,7 @@ def print_err(e: Exception) -> None:
 
 def print_release_link(args: Namespace) -> int:
     try:  # Get the download link and output it
-        dl_url = get_latest_dl_url(args.repo, prefix=args.prefix, suffix=args.suffix)
+        dl_url = get_latest_dl_url(args.repo, regex=args.regex)
         print(dl_url)
         return 0
     except (ValueError, KeyError) as e:  # No link found

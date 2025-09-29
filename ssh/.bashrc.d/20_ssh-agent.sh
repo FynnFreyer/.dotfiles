@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-#eval $(ssh-agent) > /dev/null
-#for key in "~/.ssh/id_!(*.pub)"; do
-#    ssh-add "$key"
-#done
+shopt -s extglob
+
+if [ -z "$SSH_AUTH_SOCK" ] ; then
+  eval $(ssh-agent) > /dev/null
+  ssh-add "$HOME/.ssh"/id_!(*.pub)
+fi

@@ -1,3 +1,6 @@
+defaults:
+  - pageenvs.yaml  # defines environments for use via fenced divs
+
 verbosity: INFO
 fail-if-warnings: false
 log-file: ${HOME}/.local/state/pandoc/pandoc.log

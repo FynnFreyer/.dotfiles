@@ -3,6 +3,7 @@ xonsh-direnv
 xontrib-makefile-complete
 xontrib-kitty
 xontrib-argcomplete
+xontrib-bash-completions-dirs
 PyYAML
 requests
 numpy

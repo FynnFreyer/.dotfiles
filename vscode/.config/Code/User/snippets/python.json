@@ -1,3 +1,4 @@
+// Docs @ https://code.visualstudio.com/docs/editing/userdefinedsnippets
 {
     "Main Guard": {
         "prefix": "main",

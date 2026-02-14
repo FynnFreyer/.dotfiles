@@ -58,4 +58,14 @@
     // browser
     "workbench.browser.dataStorage": "workspace",
     "workbench.browser.openLocalhostLinks": true,
+    // language overrides
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[snippets]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
 }

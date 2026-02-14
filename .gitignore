@@ -1,5 +1,6 @@
 vpn/
 .idea/
+.vscode/
 !python/.local/lib/
 
 ### Python template

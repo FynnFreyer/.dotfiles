@@ -8,15 +8,15 @@
         ],
         "description": "Standard execution guard"
     },
-    "Typed Function": {
+    "Typed Method or Function": {
         "prefix": "def",
         "body": [
-            "def ${1:func_name}(${2:param}: ${3:type}) -> ${4:None}:",
+            "def ${1:func_name}(${2:self, }${3:param}: ${4:type}) -> ${5:None}:",
             "\t\"\"\"",
-            "\t${5:Short description...}",
+            "\t${6:Short description...}",
             "",
-            "\t:param ${2:param}: ${6:description}",
-            "\t:return: ${7:description}",
+            "\t:param ${3:param}: ${7:description}",
+            "\t:return: ${8:description}",
             "\t\"\"\"",
             "\t${0:pass}"
         ],

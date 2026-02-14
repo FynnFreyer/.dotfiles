@@ -1,0 +1,58 @@
+{
+    // styling
+    "window.autoDetectColorScheme": true,
+    "workbench.colorTheme": "Default Light Modern",
+    "editor.fontFamily": "'Inconsolata Mono', monospace",
+    "editor.fontLigatures": true,
+    // ui elements
+    "editor.scrollbar.horizontal": "hidden",
+    "editor.showFoldingControls": "always",
+    "editor.minimap.autohide": "scroll",
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.panel.defaultLocation": "right",
+    "workbench.startupEditor": "none",
+    // searching/finding
+    "editor.find.autoFindInSelection": "multiline",
+    "editor.selectionHighlightMultiline": true,
+    "search.exclude": {
+        "**/.ansible": true,
+        "**/.venv": true,
+        "**/venv": true
+    },
+    // file behaviour
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.autoSave": "afterDelay",
+    // editing
+    "editor.tabCompletion": "on",
+    "editor.linkedEditing": true,
+    "editor.unfoldOnClickAfterEndOfLine": true,
+    "editor.mouseWheelZoom": true,
+    "diffEditor.codeLens": true,
+    "diffEditor.experimental.useTrueInlineView": true,
+    // terminal
+    "terminal.integrated.mouseWheelZoom": true,
+    "terminal.integrated.allowChords": false,
+    "terminal.integrated.allowedLinkSchemes": [
+        "file",
+        "http",
+        "https",
+        "mailto",
+        "ftp"
+    ],
+    "terminal.integrated.altClickMovesCursor": false,
+    "terminal.integrated.bellDuration": 500,
+    "terminal.integrated.copyOnSelection": true,
+    "terminal.integrated.cursorBlinking": true,
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.lineHeight": 1,
+    "terminal.integrated.persistentSessionScrollback": 1000,
+    "terminal.integrated.scrollback": 5000,
+    "terminal.integrated.sendKeybindingsToShell": true,
+    "terminal.integrated.suggest.inlineSuggestion": "off",
+    "terminal.integrated.tabs.enabled": false,
+    // browser
+    "workbench.browser.dataStorage": "workspace",
+    "workbench.browser.openLocalhostLinks": true,
+}

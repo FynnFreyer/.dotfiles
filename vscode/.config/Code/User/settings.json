@@ -1,4 +1,7 @@
 {
+    // general
+    "window.newWindowProfile": "Default",
+    "chat.disableAIFeatures": true,
     // styling
     "window.autoDetectColorScheme": true,
     "workbench.colorTheme": "Default Light Modern",

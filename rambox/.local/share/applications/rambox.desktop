@@ -6,9 +6,10 @@ Version=1.0
 Name=Rambox
 
 # previously installed via appimage
-#Exec=/home/fynn/.local/bin/Rambox.AppImage
+Exec=/home/fynn/.local/bin/rambox
 
-Exec=/usr/bin/rambox
+# sometimes installed via rpm
+#Exec=/usr/bin/rambox
 Icon=/home/fynn/.local/share/icons/rambox.png
 Terminal=false
 
@@ -18,4 +19,3 @@ StartupNotify=true
 
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=2
-

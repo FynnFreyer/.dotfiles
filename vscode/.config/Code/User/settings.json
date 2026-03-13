@@ -12,7 +12,7 @@
     "editor.showFoldingControls": "always",
     "editor.minimap.autohide": "scroll",
     "workbench.tree.renderIndentGuides": "always",
-    "workbench.panel.defaultLocation": "right",
+    // "workbench.panel.defaultLocation": "right",
     "workbench.startupEditor": "none",
     // searching/finding
     "editor.find.autoFindInSelection": "multiline",
@@ -52,7 +52,6 @@
     "terminal.integrated.lineHeight": 1,
     "terminal.integrated.persistentSessionScrollback": 1000,
     "terminal.integrated.scrollback": 5000,
-    "terminal.integrated.sendKeybindingsToShell": true,
     "terminal.integrated.suggest.inlineSuggestion": "off",
     "terminal.integrated.tabs.enabled": false,
     // browser
@@ -68,4 +67,14 @@
     "[snippets]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "git.autofetch": true,
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    },
+    "terminal.integrated.fontSize": 18,
+    "git.blame.editorDecoration.enabled": true,
+    "explorer.confirmDragAndDrop": false,
 }

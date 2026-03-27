@@ -4,7 +4,7 @@
     "chat.disableAIFeatures": true,
     // styling
     "window.autoDetectColorScheme": true,
-    "workbench.colorTheme": "Default Light Modern",
+    "workbench.colorTheme": "Light Modern",
     "editor.fontFamily": "'Inconsolata Mono', monospace",
     "editor.fontLigatures": true,
     // ui elements

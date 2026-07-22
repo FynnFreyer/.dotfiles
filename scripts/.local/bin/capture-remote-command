@@ -71,11 +71,11 @@ LOCAL_CMD_LOG="local_${TIMESTAMP}.log"
 # Run the remote command
 ssh "$REMOTE_CMD_HOST" "$REMOTE_CMD" > "$REMOTE_CMD_LOG" 2> "$REMOTE_ERR_LOG" &
 DUMP_PID=$!  # ensure it's killed later
-trap 'kill -TERM "$DUMP_PID" 2>/dev/null; wait "$DUMP_PID" 2>/dev/null' EXIT
+trap 'kill -TERM "$DUMP_PID" 2>/dev/null; wait "$DUMP_PID" 2> /dev/null' EXIT
 
 sleep "$TIMEOUT"
 
 # Run the local command if one is defined
 if [[ -n "$LOCAL_CMD" ]]; then
-    eval "$LOCAL_CMD" &> "$LOCAL_CMD_LOG"
+    eval "$LOCAL_CMD" 2>&1 | tee "$LOCAL_CMD_LOG"
 fi

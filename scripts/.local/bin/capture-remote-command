@@ -10,8 +10,9 @@ Options:
   -H, --host          Remote host to SSH into
   -R, --remote-cmd    Command to run on the remote host
   -L, --local-cmd     Command to run locally (optional)
-  -t, --timeout       How many seconds to wait before starting local command
-                      execution or terminate remote command
+  -t, --timeout       Seconds to wait before starting local or terminating
+                      remote command
+  -t, --prefix        Prefix to prepend to log names
   -h, --help          Print this usage information
 EOF
     # Exit with 0 if explicitly asked for help, otherwise 1 for errors
@@ -26,6 +27,7 @@ REMOTE_CMD_HOST=""
 REMOTE_CMD=""
 LOCAL_CMD=""
 TIMEOUT=2
+PREFIX=""
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -49,6 +51,10 @@ while [[ "$#" -gt 0 ]]; do
             TIMEOUT="$2"
             shift
             ;;
+        -p|--prefix)
+            PREFIX="${2}_"
+            shift
+            ;;
         *)
             echo "Error: Unknown parameter passed: $1" >&2
             usage "error"
@@ -64,9 +70,9 @@ if [[ -z "$REMOTE_CMD_HOST" || -z "$REMOTE_CMD" ]]; then
 fi
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-REMOTE_CMD_LOG="remote_${TIMESTAMP}.log"
-REMOTE_ERR_LOG="remote_err_${TIMESTAMP}.log"
-LOCAL_CMD_LOG="local_${TIMESTAMP}.log"
+REMOTE_CMD_LOG="${PREFIX}remote_${TIMESTAMP}.log"
+REMOTE_ERR_LOG="${PREFIX}remote_err_${TIMESTAMP}.log"
+LOCAL_CMD_LOG="${PREFIX}local_${TIMESTAMP}.log"
 
 # Run the remote command
 ssh "$REMOTE_CMD_HOST" "$REMOTE_CMD" > "$REMOTE_CMD_LOG" 2> "$REMOTE_ERR_LOG" &

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+usage() {
+    cat <<EOF
+Usage: $0 -H <remote_host> -R <remote_command> [-L <local_command>]
+
+Capture the output of a remote command, possibly while a local command is run.
+
+Options:
+  -H, --host          Remote host to SSH into
+  -R, --remote-cmd    Command to run on the remote host
+  -L, --local-cmd     Command to run locally (optional)
+  -t, --timeout       How many seconds to wait before starting local command
+                      execution or terminate remote command
+  -h, --help          Print this usage information
+EOF
+    # Exit with 0 if explicitly asked for help, otherwise 1 for errors
+    if [[ "$1" == "help" ]]; then
+        exit 0
+    else
+        exit 1
+    fi
+}
+
+REMOTE_CMD_HOST=""
+REMOTE_CMD=""
+LOCAL_CMD=""
+TIMEOUT=2
+
+# Parse command line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage "help"
+            ;;
+        -H|--host)
+            REMOTE_CMD_HOST="$2"
+            shift
+            ;;
+        -R|--remote-cmd)
+            REMOTE_CMD="$2"
+            shift
+            ;;
+        -L|--local-cmd)
+            LOCAL_CMD="$2"
+            shift
+            ;;
+        -t|--timeout)
+            TIMEOUT="$2"
+            shift
+            ;;
+        *)
+            echo "Error: Unknown parameter passed: $1" >&2
+            usage "error"
+            ;;
+    esac
+    shift
+done
+
+# Check for missing required arguments
+if [[ -z "$REMOTE_CMD_HOST" || -z "$REMOTE_CMD" ]]; then
+    echo "Error: Missing required arguments." >&2
+    usage "error"
+fi
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+REMOTE_CMD_LOG="remote_${TIMESTAMP}.log"
+REMOTE_ERR_LOG="remote_err_${TIMESTAMP}.log"
+LOCAL_CMD_LOG="local_${TIMESTAMP}.log"
+
+# Run the remote command
+ssh "$REMOTE_CMD_HOST" "$REMOTE_CMD" > "$REMOTE_CMD_LOG" 2> "$REMOTE_ERR_LOG" &
+DUMP_PID=$!  # ensure it's killed later
+trap 'kill -TERM "$DUMP_PID" 2>/dev/null; wait "$DUMP_PID" 2>/dev/null' EXIT
+
+sleep "$TIMEOUT"
+
+# Run the local command if one is defined
+if [[ -n "$LOCAL_CMD" ]]; then
+    eval "$LOCAL_CMD" &> "$LOCAL_CMD_LOG"
+fi

@@ -2,12 +2,25 @@
 pandoc-latex-environment:
   landscape: [landscape]
   tcolorbox: [box]
-  info-box: [info]
-  warning-box: [warning]
-  danger-box: [danger]
-  aside-box: [aside]
-  example-box: [example]
   wrapfigure: [wrap]
   raster-two-cols: [two-cols]
   col: [col]
+
+  # Color Boxes
+  aside-box: [aside]
+  example-box: [example]
+  info-box: [info]
+  note-box: [note]
+  abstract-box: [abstract, summary, tldr]
+  todo-box: [todo]
+  tip-box: [tip, hint]
+  important-box: [important]
+  success-box: [success, check, done]
+  question-box: [question, help, faq]
+  failure-box: [failure, fail, missing]
+  quote-box: [quote, cite]
+
+  # Groups with aliases
+  warning-box: [warning, caution, attention]
+  danger-box: [danger, error, bug]
 ---

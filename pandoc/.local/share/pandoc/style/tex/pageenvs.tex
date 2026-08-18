@@ -84,56 +84,39 @@
 }
 
 % obsidian alert boxes
-\newtcolorbox{note-box}{
-    title=Note,
-    colback=blue!5!white,
-    colframe=blue!50!gray
-}
+% --- ORANGE BOXES (Warning-style) ---
+\newtcolorbox{caution-box}{title=Caution, colback=orange!10!white, colframe=orange!80!black}
+\newtcolorbox{attention-box}{title=Attention, colback=orange!10!white, colframe=orange!80!black}
 
-\newtcolorbox{abstract-box}{
-    title=Abstract,
-    colback=teal!10!white,
-    colframe=teal!70!black
-}
+% --- RED BOXES (Danger-style) ---
+\newtcolorbox{error-box}{title=Error, colback=red!10!white, colframe=red!75!black}
+\newtcolorbox{bug-box}{title=Bug, colback=red!10!white, colframe=red!75!black}
+\newtcolorbox{failure-box}{title=Failure, colback=red!10!white, colframe=red!75!black}
+\newtcolorbox{fail-box}{title=Fail, colback=red!10!white, colframe=red!75!black}
+\newtcolorbox{missing-box}{title=Missing, colback=red!10!white, colframe=red!75!black}
 
-\newtcolorbox{todo-box}{
-    title=To Do,
-    colback=purple!10!white,
-    colframe=purple!70!black
-}
+% --- BLUE/TEAL BOXES (Info-style) ---
+\newtcolorbox{note-box}{title=Note, colback=cyan!10!white, colframe=cyan!60!black}
+\newtcolorbox{abstract-box}{title=Abstract, colback=teal!10!white, colframe=teal!70!black}
+\newtcolorbox{summary-box}{title=Summary, colback=teal!10!white, colframe=teal!70!black}
+\newtcolorbox{tldr-box}{title=TL;DR, colback=teal!10!white, colframe=teal!70!black}
 
-\newtcolorbox{tip-box}{
-    title=Tip,
-    colback=green!10!white,
-    colframe=green!60!black
-}
+% --- GREEN BOXES (Success/Tip-style) ---
+\newtcolorbox{tip-box}{title=Tip, colback=green!10!white, colframe=green!60!black}
+\newtcolorbox{hint-box}{title=Hint, colback=green!10!white, colframe=green!60!black}
+\newtcolorbox{success-box}{title=Success, colback=green!15!white, colframe=green!50!black}
+\newtcolorbox{check-box}{title=Check, colback=green!15!white, colframe=green!50!black}
+\newtcolorbox{done-box}{title=Done, colback=green!15!white, colframe=green!50!black}
 
-\newtcolorbox{important-box}{
-    title=Important,
-    colback=violet!10!white,
-    colframe=violet!70!black
-}
+% --- YELLOW BOXES (Question-style) ---
+\newtcolorbox{question-box}{title=Question, colback=yellow!10!white, colframe=yellow!70!black}
+\newtcolorbox{help-box}{title=Help, colback=yellow!10!white, colframe=yellow!70!black}
+\newtcolorbox{faq-box}{title=FAQ, colback=yellow!10!white, colframe=yellow!70!black}
 
-\newtcolorbox{success-box}{
-    title=Success,
-    colback=green!15!white,
-    colframe=green!50!black
-}
+% --- PURPLE/VIOLET BOXES ---
+\newtcolorbox{todo-box}{title=To Do, colback=purple!10!white, colframe=purple!70!black}
+\newtcolorbox{important-box}{title=Important, colback=violet!10!white, colframe=violet!70!black}
 
-\newtcolorbox{question-box}{
-    title=Question,
-    colback=yellow!10!white,
-    colframe=yellow!70!black
-}
-
-\newtcolorbox{failure-box}{
-    title=Failure,
-    colback=red!5!white,
-    colframe=red!50!black
-}
-
-\newtcolorbox{quote-box}{
-    title=Quote,
-    colback=gray!5!white,
-    colframe=gray!50!black
-}
+% --- GRAY BOXES ---
+\newtcolorbox{quote-box}{title=Quote, colback=gray!10!white, colframe=gray!40!black}
+\newtcolorbox{cite-box}{title=Cite, colback=gray!10!white, colframe=gray!40!black}

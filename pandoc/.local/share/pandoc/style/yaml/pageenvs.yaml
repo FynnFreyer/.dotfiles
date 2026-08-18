@@ -5,22 +5,44 @@ pandoc-latex-environment:
   wrapfigure: [wrap]
   raster-two-cols: [two-cols]
   col: [col]
-
-  # Color Boxes
+  
+  # Existing
   aside-box: [aside]
   example-box: [example]
   info-box: [info]
+  warning-box: [warning]
+  danger-box: [danger]
+  
+  # Group: Warnings (Orange)
+  caution-box: [caution]
+  attention-box: [attention]
+  
+  # Group: Danger (Red)
+  error-box: [error]
+  bug-box: [bug]
+  failure-box: [failure]
+  fail-box: [fail]
+  missing-box: [missing]
+  
+  # Group: Info / Notes (Blue/Teal)
   note-box: [note]
-  abstract-box: [abstract, summary, tldr]
+  abstract-box: [abstract]
+  summary-box: [summary]
+  tldr-box: [tldr]
+  
+  # Group: Success / Tips (Green)
+  tip-box: [tip]
+  hint-box: [hint]
+  success-box: [success]
+  check-box: [check]
+  done-box: [done]
+  
+  # Group: Misc
   todo-box: [todo]
-  tip-box: [tip, hint]
   important-box: [important]
-  success-box: [success, check, done]
-  question-box: [question, help, faq]
-  failure-box: [failure, fail, missing]
-  quote-box: [quote, cite]
-
-  # Groups with aliases
-  warning-box: [warning, caution, attention]
-  danger-box: [danger, error, bug]
+  question-box: [question]
+  help-box: [help]
+  faq-box: [faq]
+  quote-box: [quote]
+  cite-box: [cite]
 ---

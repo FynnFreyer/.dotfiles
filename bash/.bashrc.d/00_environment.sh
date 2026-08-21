@@ -4,10 +4,18 @@ export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
+# these are invented... should probably not prefix them with XDG_
+export XDG_BIN_HOME="$HOME/.local/bin"
+export XDG_LIB_HOME="$HOME/.local/lib"
+export XDG_INCLUDE_HOME="$HOME/.local/include"
+export XDG_MAN_HOME="$HOME/.local/man"
+export XDG_OPT_HOME="$HOME/.local/opt"
+
+
 # add user binaries, libs and includes to search PATHs
-BIN_DIRS="$HOME/.local/bin:$HOME/bin"
-LIB_DIRS="$HOME/.local/lib"
-INCLUDE_DIRS="$HOME/.local/include"
+BIN_DIRS="$XDG_BIN_HOME:$HOME/bin"
+LIB_DIRS="$XDG_LIB_HOME"
+INCLUDE_DIRS="$XDG_INCLUDE_HOME"
 
 if ! [[ "$PATH" =~ $BIN_DIRS ]]; then
     export PATH="$BIN_DIRS:$PATH"

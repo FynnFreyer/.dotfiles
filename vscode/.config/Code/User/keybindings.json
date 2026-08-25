@@ -93,6 +93,13 @@
         "command": "editor.action.insertCursorBelow",
         "when": "editorTextFocus"
     },
+    // linebreak in terminal with shift-enter
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { "text": "\u000A" },
+        "when": "terminalFocus"
+    },
     /////////////////////////
     // LOOKUPS
     /////////////////////////

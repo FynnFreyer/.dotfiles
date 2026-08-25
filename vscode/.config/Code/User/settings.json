@@ -86,18 +86,7 @@
         "--max-line-length",
         "120"
     ],
-    "shellformat.useEditorConfig": true,
-    "shellformat.effectLanguages": [
-        "shellscript",
-        "dockerfile",
-        "dotenv",
-        "hosts",
-        "jvmoptions",
-        "ignore",
-        "gitignore",
-        "properties",
-        "spring-boot-properties",
-        "azcli",
-        "bats"
-    ],
+    "[shellscript]": {
+        "editor.defaultFormatter": "mkhl.shfmt"
+    },
 }

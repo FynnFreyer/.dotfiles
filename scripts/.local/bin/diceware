@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+
+"""
+Roll diceware passwords.
+"""
+
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from os import getenv
+from pathlib import Path
+from random import randint
+from subprocess import run
+from sys import argv, stderr
+from traceback import format_exception, format_exception_only
+from typing import Any
+
+
+# Constants and global variables
+__description__ = "roll diceware passwords"
+__version__ = "0.0.1"
+
+__prog__ = Path(argv[0]).name  # good default -> prog name == file name
+__author__ = "Fynn Freyer"
+__copyright__ = f"Copyright (c) 2026 {__author__}"
+__epilog__ = f"{__prog__} v{__version__} is software by {__author__}.\n{__copyright__}"
+
+
+# TODO: globals go here (use SPARINGLY, for reasoning see https://dl.acm.org/doi/10.1145/953353.953355)
+VERBOSE = False
+SCRIPT_DIR = Path(__file__).parent.resolve()
+XDG_DATA_HOME = Path(getenv("XDG_DATA_HOME", Path.home() / ".local/share"))
+
+
+def parse_args(argv: list[str] | None = None) -> Namespace:
+    """
+    This function parses the CLI arguments to the script.
+
+    :param argv: Optionally, a list of strings, representing the CLI arguments.
+    :returns: The parsed arguments in a ``Namespace`` object.
+    """
+    parser = ArgumentParser(
+        prog=__prog__,
+        description=__description__,
+        epilog=__epilog__,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+
+    # Flags
+    default_words = 4
+    parser.add_argument("-w", "--words", type=int, default=default_words,
+                        help=f"how many words to roll (default: {default_words})")
+
+    default_list = XDG_DATA_HOME / "diceware/wordlist.asc"
+    parser.add_argument("-l", "--word-list", type=Path, default=default_list,
+                        help=f"the file to use as word list (default: {default_list})")
+
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="print more verbose output")
+    parser.add_argument("-V", "--version", action="version", version=__version__,
+                        help="display the version of this script")
+
+    args = parser.parse_args(argv)
+
+    global VERBOSE
+    VERBOSE = args.verbose
+
+    # TODO (optional): do further post processing/validation of args
+    if not args.word_list.is_file():
+        raise ValueError(f"No wordlist file at {args.word_list}")
+
+    return args
+
+
+# -------------------- #
+# Logic
+# -------------------- #
+
+
+def roll_word(n: int = 5) -> str:
+    nums = [str(randint(1, 6)) for _ in range(n)]
+    return "".join(nums)
+
+
+def roll_words(words: int = 4) -> list[str]:
+    return [roll_word() for _ in range(words)]
+
+
+def choose_words(word_file: str | Path, rolls: list[str]) -> list[str]:
+    words = []
+    for roll in rolls:
+        grep = run(["grep", str(roll), str(word_file)], capture_output=True, text=True)
+        line = grep.stdout.strip()
+        _, word = line.split()
+        words.append(word)
+    return words
+
+
+def diceware(word_list: str | Path, words: int = 4):
+    rolls = roll_words(words)
+    words = choose_words(word_list, rolls)
+    print(" ".join(words))
+
+
+def main(argv: list[str] | None = None) -> int:
+    """
+    The script entrypoint. This function is executed, when running the script.
+
+    :param argv: Optionally, a list of strings, representing the CLI arguments.
+    :returns: The exit code of the script. Non-zero indicates an error.
+    """
+    try:
+        args = parse_args(argv)
+        diceware(args.word_list, args.words)
+        return 0
+    except Exception as e:
+        err = "".join(format_exception(e) if VERBOSE else format_exception_only(e))
+        print(err, file=stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    exit(main())

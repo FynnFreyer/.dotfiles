@@ -1,5 +1,4 @@
-# .bashrc
-# set -x
+# .bash_logout
 
 # If not running interactively, don't do anything
 case $- in

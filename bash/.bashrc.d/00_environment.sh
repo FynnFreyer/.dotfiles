@@ -11,7 +11,6 @@ export XDG_INCLUDE_HOME="$HOME/.local/include"
 export XDG_MAN_HOME="$HOME/.local/man"
 export XDG_OPT_HOME="$HOME/.local/opt"
 
-
 # add user binaries, libs and includes to search PATHs
 BIN_DIRS="$XDG_BIN_HOME:$HOME/bin"
 LIB_DIRS="$XDG_LIB_HOME"

@@ -56,7 +56,6 @@
     "terminal.integrated.scrollback": 5000,
     "terminal.integrated.suggest.inlineSuggestion": "off",
     "terminal.integrated.tabs.enabled": false,
-    "terminal.integrated.fontSize": 20,
     // browser
     "workbench.browser.dataStorage": "workspace",
     "workbench.browser.openLocalhostLinks": true,
@@ -80,7 +79,7 @@
         "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8"
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "autopep8.args": [
         "--max-line-length",
@@ -89,4 +88,7 @@
     "[shellscript]": {
         "editor.defaultFormatter": "mkhl.shfmt"
     },
+    "terminal.integrated.fontSize": 26,
+    "jupyter.askForKernelRestart": false,
+    "python.createEnvironment.trigger": "off",
 }

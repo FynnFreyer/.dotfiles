@@ -1,0 +1,41 @@
+# coloring
+set colored-stats on
+
+# better completions
+# list matches immediately instead of ringing the bell
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+# use color for matched prefix
+set colored-completion-prefix on
+# color-code completion suggestions by file type
+set colored-stats on
+# show options on first tab
+set show-all-if-ambiguous on
+# cycle through options on subsequent tabs
+# set menu-complete-display-prefix on
+# don't complete already written text after cursor
+set skip-completed-text on
+
+# key bindings for completions
+# Tab: menu-complete
+# "\e[Z": menu-complete-backward
+
+
+$if Bash
+  # C-<arrow> -> skip words
+  #"\e[1;*C": forward-word
+  #"\e[1;*D": backward-word
+  "\e[1;5C": forward-word
+  "\e[1;5D": backward-word
+  # map Home/End -> skip line
+  #"\e[1~": beginning-of-line
+  #"\e[4~": end-of-line
+$endif
+
+# enable bracketed paste mode
+set enable-bracketed-paste on
+
+# briefly highlight opening paren when closing
+set blink-matching-paren on
+# use blinking instead of bell
+set prefer-visible-bell on

@@ -48,7 +48,7 @@ unset host_color
 
 # set prompt vars
 PS0="$_RESET"  # emited right before command output
-PS1="${_host} : ${_cwd} ${_time}\n${_suffix}" # the prompt
+PS1="${_BOLD}${_host} : ${_cwd} ${_time}\n${_suffix}${_BOLD_RESET}" # the prompt
 PS2='    '  # line continuation
 
 unset _host _cwd _time _suffix

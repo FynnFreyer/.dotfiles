@@ -1,0 +1,16 @@
+/** Clean up unneeded stuff
+ *
+ * Hide native tab bar, and sidebar panel header, for use with SideBery.
+ */
+
+/* Native tabs can be targeted directly.  */
+tabs {
+    visibility: collapse !important;
+}
+
+/* Rule for sidebar panel header needs to explicitly target the correct document.  */
+@-moz-document url("chrome://browser/content/webext-panels.xhtml") {
+    *|sidebar-panel-header {
+        visibility: collapse !important;
+    }
+}

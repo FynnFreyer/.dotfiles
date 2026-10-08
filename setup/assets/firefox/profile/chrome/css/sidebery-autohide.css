@@ -46,9 +46,9 @@
     transition: all var(--transition-duration) var(--transition-smoothing-function);
 }
 
-/* Extend sidebar on hover, or when the `extend` sentinel attribute is set. */
+/* Extend sidebar on hover, or when the search bar is opened. */
 #sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"]:hover,
-#sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"][extend="true"] {
+#main-window:has(panel[viewId="PanelUI-webext-_3c078156-979c-498b-8990-85f7987dd929_-BAV"][hasbeenopened="true"]) #sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] {
     min-width: var(--sidebery-extended-width) !important;
     width: var(--sidebery-extended-width) !important;
     max-width: var(--sidebery-extended-width) !important;

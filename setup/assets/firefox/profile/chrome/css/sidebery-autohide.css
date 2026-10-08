@@ -22,7 +22,7 @@
 /* Extend sidebar normally, when not using SideBery. */
 #sidebar-box:not([sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"]) {
     min-width: var(--sidebery-retracted-width) !important;
-    width: var(--sidebery-extended-width);
+    width: var(--sidebery-extended-width) !important;
     max-width: none !important;
 }
 
@@ -33,11 +33,14 @@
     max-width: var(--sidebery-retracted-width) !important;
 
     /* Set explicit z-index, to enable sidebar displaying over app content. */
-    z-index: 10;
+    z-index: 10 !important;
 
     /* Margin zero, instead of auto, suppresses jittering. */
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Padding zero, fixes internal spacing. */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 
     /* Fix for sidebar closing on tab drop. */
     transition: all var(--transition-duration) var(--transition-smoothing-function);
@@ -51,8 +54,8 @@
     max-width: var(--sidebery-extended-width) !important;
 
     /* Correct right-margin to keep page from being pushed to the side. */
-    margin-right: var(--sidebery-extended-margin-correction);
-    margin-left: 0;
+    margin-right: var(--sidebery-extended-margin-correction) !important;
+    margin-left: 0 !important;
 
 
     /**
@@ -65,7 +68,7 @@
      * Setting the about:config values gfx.webrender.all and gfx.webrender.enabled set to true
      * *could* be needed, according to anecdotal evidence, but are not for me.
      */
-    opacity: 0.8;
+    opacity: 0.8 !important;
 }
 
 /** Clean up unneeded stuff
@@ -82,4 +85,3 @@ tabs,
 #sidebar-box[sidebarcommand="_3c078156-979c-498b-8990-85f7987dd929_-sidebar-action"] + #sidebar-splitter {
     visibility: collapse;
 }
-

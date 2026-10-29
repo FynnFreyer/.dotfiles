@@ -1,0 +1,363 @@
+#!/usr/bin/env -S uv run --script
+
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "matplotlib",
+#    "pandas",
+#    "seaborn",
+# ]
+# ///
+
+"""
+Extract call logs for a target phone number via adb and visualize call patterns.
+"""
+
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from datetime import datetime
+from pathlib import Path
+import re
+import subprocess
+from sys import argv, stderr
+from traceback import format_exception, format_exception_only
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+__description__ = "Extract call logs for a target number via adb and visualize behavior."
+__version__ = "0.5.0"
+__prog__ = Path(argv[0]).name
+__author__ = "Fynn Freyer"
+__copyright__ = f"Copyright (c) 2025 {__author__}"
+__epilog__ = f"{__prog__} v{__version__} is software by {__author__}.\n{__copyright__}"
+
+VERBOSE = False
+
+CALL_TYPES = {
+    1: "Incoming",
+    2: "Outgoing",
+    3: "Missed",
+    5: "Rejected",
+    6: "Blocked",
+}
+
+
+def normalize_number(raw_number: str) -> str:
+    """
+    Extract the significant trailing digits of a phone number for comparison.
+
+    :param raw_number: Unparsed phone number string.
+    :returns: Digits-only representation truncated to the last 9 digits.
+    """
+    # Strips regional prefixes and delimiters to match international and local variants
+    digits = re.sub(r"\D", "", raw_number)
+    return digits[-9:] if len(digits) >= 9 else digits
+
+
+def fetch_call_logs() -> list[dict[str, str | int]]:
+    """
+    Query CallLog content provider on the connected Android device via adb.
+
+    :returns: Extracted records containing raw number, epoch ms, duration, and type.
+    :raises RuntimeError: If the adb query command exits with a non-zero status.
+    """
+    cmd = [
+        "adb", "shell", "content", "query",
+        "--uri", "content://call_log/calls",
+        "--projection", "number:date:duration:type",
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if res.returncode != 0:
+        raise RuntimeError(f"ADB query failed: {res.stderr.strip()}")
+
+    pattern = re.compile(
+        r"number=(?P<number>[^,]*),\s*date=(?P<date>\d+),\s*duration=(?P<duration>\d+),\s*type=(?P<type>\d+)"
+    )
+    records = []
+    for line in res.stdout.splitlines():
+        if match := pattern.search(line):
+            records.append({
+                "number": match.group("number").strip(),
+                "timestamp": int(match.group("date")),
+                "duration": int(match.group("duration")),
+                "type_id": int(match.group("type")),
+            })
+    return records
+
+
+def process_records(
+    records: list[dict[str, str | int]],
+    target_number: str,
+    since: datetime | None = None,
+    until: datetime | None = None,
+) -> pd.DataFrame:
+    """
+    Filter, clean, and classify call logs for the target number and timeframe.
+
+    :param records: Raw extracted call records.
+    :param target_number: Phone number to filter against.
+    :param since: Inclusive lower bound timestamp.
+    :param until: Inclusive upper bound timestamp.
+    :returns: Cleaned DataFrame with enriched analytics attributes.
+    :raises ValueError: If no matching records are found for criteria.
+    """
+    target_norm = normalize_number(target_number)
+    matched = [r for r in records if normalize_number(str(r["number"])) == target_norm]
+    if not matched:
+        raise ValueError(f"No call records found matching target: {target_number}")
+
+    df = pd.DataFrame(matched)
+    df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms")
+
+    if since:
+        df = df[df["datetime"] >= since]
+    if until:
+        df = df[df["datetime"] <= until]
+
+    if df.empty:
+        raise ValueError("No records match the requested timeframe.")
+
+    df["raw_type"] = df["type_id"].map(CALL_TYPES).fillna("Other")
+    df["direction"] = df["type_id"].apply(lambda t: "Outgoing" if t == 2 else "Incoming")
+
+    # Short interactions are considered missed or declined without meaningful engagement
+    is_unanswered = df["type_id"].isin([3, 5, 6]) | (df["duration"] < 10)
+    df["outcome"] = is_unanswered.map({True: "Missed/Rejected (<10s)", False: "Connected (≥10s)"})
+
+    df["duration_min"] = df["duration"] / 60.0
+    df["month"] = df["datetime"].dt.to_period("M").dt.to_timestamp()
+    df["hour"] = df["datetime"].dt.hour
+
+    return df.sort_values("datetime").reset_index(drop=True)
+
+
+def plot_analytics(df: pd.DataFrame, target: str, output: Path | None = None) -> None:
+    """
+    Render behavioral call charts and either save to vector/raster file or display.
+
+    :param df: Processed DataFrame containing call records.
+    :param target: Display label for the target contact.
+    :param output: Optional destination path to save the generated plot.
+    """
+    sns.set_theme(style="whitegrid")
+    palette = {"Incoming": "#4C72B0", "Outgoing": "#DD8452"}
+    directions = ["Incoming", "Outgoing"]
+    outcomes = ["Connected (≥10s)", "Missed/Rejected (<10s)"]
+
+    start_date = df["datetime"].min().strftime("%Y-%m-%d")
+    end_date = df["datetime"].max().strftime("%Y-%m-%d")
+    date_range = f"{start_date} to {end_date}"
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+    fig.suptitle(f"Call Analytics: {target}", fontsize=16, weight="bold")
+
+    # 1. Overall volume by count (Donut chart)
+    counts = df["direction"].value_counts()
+    count_colors = [palette[k] for k in counts.index]
+    axes[0, 0].pie(
+        counts,
+        labels=counts.index,
+        autopct="%1.1f%%",
+        startangle=90,
+        pctdistance=0.75,
+        colors=count_colors,
+        wedgeprops={"width": 0.38, "edgecolor": "white", "linewidth": 2},
+    )
+    axes[0, 0].text(0, 0, f"{len(df)}\nCalls", ha="center", va="center", fontsize=13, weight="bold")
+    axes[0, 0].set_title("Overall Volume (Total Calls)")
+
+    # 2. Overall volume by talk time / airtime (Donut chart)
+    duration_by_dir = df.groupby("direction")["duration"].sum()
+    total_seconds = duration_by_dir.sum()
+    if total_seconds > 0:
+        duration_colors = [palette[k] for k in duration_by_dir.index]
+        axes[0, 1].pie(
+            duration_by_dir,
+            labels=duration_by_dir.index,
+            autopct="%1.1f%%",
+            startangle=90,
+            pctdistance=0.75,
+            colors=duration_colors,
+            wedgeprops={"width": 0.38, "edgecolor": "white", "linewidth": 2},
+        )
+        total_str = f"{total_seconds / 3600:.1f}h" if total_seconds >= 3600 else f"{total_seconds / 60:.1f}m"
+        axes[0, 1].text(0, 0, f"{total_str}\nAirtime", ha="center", va="center", fontsize=13, weight="bold")
+        axes[0, 1].set_title("Overall Volume (Talk Time)")
+    else:
+        axes[0, 1].text(0.5, 0.5, "No connected talk time", ha="center", va="center")
+        axes[0, 1].set_title("Overall Volume (Talk Time)")
+
+    # 3. Monthly volume timeline
+    monthly = (
+        df.groupby(["month", "direction"])
+        .size()
+        .unstack(fill_value=0)
+        .sort_index()
+    )
+    monthly.plot(
+        kind="bar",
+        stacked=True,
+        ax=axes[0, 2],
+        color=[palette.get(c, "#999") for c in monthly.columns],
+        width=0.8,
+    )
+    axes[0, 2].set_title("Call Volume Over Time")
+    axes[0, 2].set_xlabel("Month")
+    axes[0, 2].set_ylabel("Total Calls")
+    axes[0, 2].set_xticklabels([d.strftime("%Y-%m") for d in monthly.index], rotation=45, ha="right")
+    axes[0, 2].legend(title=date_range)
+
+    # 4. Answering behaviour & outcome with percentages
+    sns.countplot(
+        data=df,
+        x="direction",
+        hue="outcome",
+        order=directions,
+        hue_order=outcomes,
+        ax=axes[1, 0],
+        palette={"Connected (≥10s)": "#55A868", "Missed/Rejected (<10s)": "#C44E52"},
+    )
+    axes[1, 0].set_title("Answering Behaviour by Direction")
+    axes[1, 0].set_xlabel("Initiator")
+    axes[1, 0].set_ylabel("Call Count")
+    # Extra headroom prevents top-of-bar labels from colliding with plot borders
+    axes[1, 0].margins(y=0.15)
+
+    # Relative percentages contextualize call success rates per initiator
+    dir_totals = {d: (df["direction"] == d).sum() for d in directions}
+    for container in axes[1, 0].containers:
+        labels = [
+            f"{int(bar.get_height())}\n({(bar.get_height() / dir_totals[directions[i]] * 100):.1f}%)"
+            if (h := bar.get_height()) > 0 and dir_totals[directions[i]] > 0
+            else ""
+            for i, bar in enumerate(container)
+        ]
+        axes[1, 0].bar_label(container, labels=labels, padding=3, fontsize=9)
+
+    # 5. Time-of-day distribution
+    sns.histplot(
+        data=df,
+        x="hour",
+        hue="direction",
+        bins=24,
+        binrange=(0, 24),
+        multiple="stack",
+        ax=axes[1, 1],
+        palette=palette,
+        legend=False,
+    )
+    axes[1, 1].set_title("Hourly Call Distribution")
+    axes[1, 1].set_xlabel("Hour of Day (24h)")
+    axes[1, 1].set_ylabel("Call Count")
+    axes[1, 1].set_xticks(range(0, 24, 2))
+
+    # 6. Connected call duration distribution
+    connected = df[df["outcome"].str.startswith("Connected")]
+    if not connected.empty:
+        sns.boxplot(
+            data=connected,
+            x="direction",
+            y="duration_min",
+            ax=axes[1, 2],
+            palette=palette,
+        )
+        axes[1, 2].set_title("Connected Call Duration Distribution")
+        axes[1, 2].set_xlabel("Initiator")
+        axes[1, 2].set_ylabel("Duration (minutes)")
+    else:
+        axes[1, 2].text(0.5, 0.5, "No connected calls", ha="center", va="center")
+
+    plt.tight_layout()
+
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(output, bbox_inches="tight")
+        print(f"Plot saved to: {output}")
+    else:
+        plt.show()
+
+    plt.close(fig)
+
+
+def parse_args(argv: list[str] | None = None) -> Namespace:
+    """
+    Parse command-line interface arguments.
+
+    :param argv: Optional command-line token list.
+    :returns: Populated ArgumentParser Namespace.
+    """
+    parser = ArgumentParser(
+        prog=__prog__,
+        description=__description__,
+        epilog=__epilog__,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "number",
+        type=str,
+        help="Target phone number (e.g., '+49 170 1234567')",
+    )
+    parser.add_argument(
+        "-o", "--output",
+        type=Path,
+        default=None,
+        help="Destination path for saving figure (e.g., plot.svg). Shows plot if omitted.",
+    )
+    parser.add_argument(
+        "--since",
+        type=pd.to_datetime,
+        default=None,
+        help="Start date/time cutoff (e.g. '2024-01-01')",
+    )
+    parser.add_argument(
+        "--until",
+        type=pd.to_datetime,
+        default=None,
+        help="End date/time cutoff (e.g. '2024-12-31')",
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="print more verbose output",
+    )
+    parser.add_argument(
+        "-V", "--version",
+        action="version",
+        version=__version__,
+        help="display the version of this script",
+    )
+
+    args = parser.parse_args(argv)
+    global VERBOSE
+    VERBOSE = args.verbose
+    return args
+
+
+def main(argv: list[str] | None = None) -> int:
+    """
+    Extract, filter, and render call record visualizations.
+
+    :param argv: Optional command-line arguments.
+    :returns: Program exit status code (0 for success, non-zero for errors).
+    """
+    try:
+        args = parse_args(argv)
+        records = fetch_call_logs()
+        df = process_records(
+            records=records,
+            target_number=args.number,
+            since=args.since,
+            until=args.until,
+        )
+        plot_analytics(df, target=args.number, output=args.output)
+        return 0
+    except Exception as e:
+        err = "".join(format_exception(e) if VERBOSE else format_exception_only(e))
+        print(err, file=stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    exit(main())
+

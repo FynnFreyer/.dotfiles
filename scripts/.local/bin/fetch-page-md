@@ -1,0 +1,381 @@
+#!/usr/bin/env -S uv run --script
+
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#    "beautifulsoup4",
+#    "httpx",
+# ]
+# ///
+
+"""
+Fetch web documentation and extract section content or heading outlines as clean Markdown.
+"""
+
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from pathlib import Path
+import subprocess
+import sys
+from sys import argv, stderr
+from traceback import format_exception, format_exception_only
+
+import httpx
+from bs4 import BeautifulSoup, Comment, Tag
+
+__description__ = "Fetch web documentation and extract sections or heading outlines as clean Markdown"
+__version__ = "0.4.0"
+
+__prog__ = Path(argv[0]).name
+__author__ = "Fynn Freyer"
+__copyright__ = f"Copyright (c) 2026 {__author__}"
+__epilog__ = f"{__prog__} v{__version__} is software by {__author__}.\n{__copyright__}"
+
+VERBOSE = False
+SCRIPT_DIR = Path(__file__).parent.resolve()
+
+CONTENT_SELECTORS = (
+    "main",
+    "article",
+    '[role="main"]',
+    "#content",
+    ".content",
+    ".document",
+    "body",
+)
+
+PERMALINK_GLYPHS = frozenset({"¶", "#", "§"})
+
+
+def parse_args(argv: list[str] | None = None) -> Namespace:
+    """
+    Parse CLI arguments for documentation URL, selectors, and runtime flags.
+
+    :param argv: Optionally, a list of strings representing CLI arguments.
+    :returns: The parsed arguments in a ``Namespace`` object.
+    """
+    parser = ArgumentParser(
+        prog=__prog__,
+        description=__description__,
+        epilog=__epilog__,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument("url", nargs="?", help="target documentation URL")
+    parser.add_argument(
+        "selector",
+        nargs="?",
+        default=None,
+        help="optional CSS selector or anchor (e.g., '#contents', 'article')",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--overview",
+        action="store_true",
+        help="output a structured markdown overview of all headings",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="print more verbose output"
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=__version__,
+        help="display the version of this script",
+    )
+
+    raw_args = argv if argv is not None else sys.argv[1:]
+
+    if "?" in raw_args or not raw_args:
+        parser.print_help()
+        parser.exit(0 if "?" in raw_args else 1)
+
+    args = parser.parse_args(argv)
+
+    global VERBOSE
+    VERBOSE = args.verbose
+
+    return args
+
+
+def fetch_html(url: str) -> str:
+    """
+    Download HTML content from the specified URL.
+
+    :param url: Target web documentation URL.
+    :returns: The decoded HTML response body.
+    :raises httpx.HTTPError: If the HTTP request fails or returns an error status code.
+    """
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; DocFetcher/1.0)"}
+    with httpx.Client(follow_redirects=True, timeout=15.0, headers=headers) as client:
+        response = client.get(url)
+        response.raise_for_status()
+        return response.text
+
+
+def clean_html_tree(html_content: str) -> str:
+    """
+    Sanitize an HTML snippet by stripping layout noise, permalinks, and non-Markdown attributes.
+
+    :param html_content: Raw HTML string to sanitize.
+    :returns: Sanitized HTML string ready for Pandoc conversion.
+    """
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    for tag in soup.find_all(
+        ["script", "style", "noscript", "svg", "button", "form", "iframe"]
+    ):
+        tag.decompose()
+
+    for comment in soup.find_all(string=lambda s: isinstance(s, Comment)):
+        comment.extract()
+
+    # Drop Sphinx/Docutils/Zola permalink anchors that produce noisy artifacts like [¶](#...)
+    for a in soup.find_all("a"):
+        text = a.get_text(strip=True)
+        classes = a.get("class", [])
+        is_permalink_class = any(
+            c in classes for c in ("headerlink", "anchor", "permalink")
+        )
+        if text in PERMALINK_GLYPHS or (is_permalink_class and not text):
+            a.decompose()
+
+    # Pandoc defaults to raw HTML whenever elements retain unsupported attributes
+    for tag in soup.find_all(True):
+        # BeautifulSoup sets attrs to None when an ancestor was decomposed earlier in the loop
+        if getattr(tag, "decomposed", False) or not tag.attrs:
+            continue
+
+        if tag.name == "a":
+            if not tag.get_text(strip=True) and not tag.find("img"):
+                tag.decompose()
+                continue
+            tag.attrs = {
+                k: tag.attrs[k] for k in ("href", "title") if k in tag.attrs
+            }
+        elif tag.name == "img":
+            tag.attrs = {
+                k: tag.attrs[k] for k in ("src", "alt", "title") if k in tag.attrs
+            }
+        elif tag.name in ("code", "pre"):
+            classes = tag.get("class", [])
+            lang = [c for c in classes if c.startswith(("language-", "lang-"))]
+            tag.attrs = {"class": lang} if lang else {}
+        else:
+            tag.attrs = {}
+
+    return str(soup)
+
+
+def html_to_markdown(html_content: str) -> str:
+    """
+    Convert an HTML snippet into clean GitHub-Flavored Markdown via Pandoc.
+
+    :param html_content: HTML snippet to convert.
+    :returns: Converted Markdown text stripped of raw HTML artifacts.
+    :raises RuntimeError: If pandoc conversion exits with a non-zero status.
+    """
+    cleaned_html = clean_html_tree(html_content)
+
+    process = subprocess.run(
+        ["pandoc", "-f", "html", "-t", "gfm-raw_html", "--wrap=none"],
+        input=cleaned_html,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if process.returncode != 0:
+        raise RuntimeError(f"pandoc conversion failed: {process.stderr.strip()}")
+
+    return process.stdout.strip()
+
+
+def extract_heading_title(heading: Tag) -> str:
+    """
+    Extract readable text from a heading tag, pruning embedded permalink icons.
+
+    :param heading: The heading HTML tag.
+    :returns: Normalized text title of the heading.
+    """
+    # Use a copy to prevent in-place mutation of the DOM during traversal
+    copy = BeautifulSoup(str(heading), "html.parser").find(heading.name)
+    if not copy or not isinstance(copy, Tag):
+        return " ".join(heading.get_text().split()).rstrip("¶#§ \t\n")
+
+    for a in copy.find_all("a"):
+        classes = a.get("class", [])
+        is_permalink = any(
+            c in classes for c in ("headerlink", "anchor", "zola-anchor", "permalink")
+        )
+        if is_permalink or a.get_text(strip=True) in PERMALINK_GLYPHS:
+            a.decompose()
+
+    return " ".join(copy.get_text().split()).rstrip("¶#§ \t\n")
+
+
+def extract_heading_id(heading: Tag) -> str | None:
+    """
+    Resolve an anchor identifier or parent section ID for a heading.
+
+    :param heading: The heading element to inspect.
+    :returns: The target ID string if found, otherwise ``None``.
+    """
+    if heading_id := heading.get("id"):
+        return str(heading_id)
+
+    if anchor := heading.find(["a", "span"], id=True):
+        return str(anchor["id"])
+
+    # Sphinx, Docutils, and HTML5 wrap sections in <section id="..."> or <div class="section" id="...">
+    parent = heading.find_parent(["section", "article", "div"])
+    while parent:
+        if parent.get("id"):
+            first_h = parent.find(["h1", "h2", "h3", "h4", "h5", "h6"])
+            if first_h is heading:
+                return str(parent["id"])
+        # Stop climbing at section boundaries to avoid associating unrelated parent containers
+        if parent.name in ("section", "article"):
+            break
+        parent = parent.find_parent(["section", "article", "div"])
+
+    # Document generators occasionally place target spans right before the heading
+    prev = heading.find_previous_sibling()
+    if prev and prev.name in ("span", "a") and prev.get("id"):
+        return str(prev["id"])
+
+    # Fall back to an internal permalink anchor href (e.g. href="#my-section")
+    for a in heading.find_all("a", href=True):
+        href = str(a["href"])
+        if href.startswith("#") and len(href) > 1:
+            return href.lstrip("#")
+
+    return None
+
+
+def generate_overview(soup: BeautifulSoup, selector: str | None = None) -> str:
+    """
+    Build a structured Markdown representation of all headings in the document.
+
+    :param soup: The parsed HTML document.
+    :param selector: Optional CSS selector to scope heading discovery.
+    :returns: Markdown string listing headings and their anchor links.
+    :raises ValueError: If a requested scoping selector is not found.
+    """
+    if selector:
+        root = soup.select_one(selector)
+        if not root:
+            raise ValueError(f"Selector not found: {selector}")
+    else:
+        for fallback in CONTENT_SELECTORS:
+            if root := soup.select_one(fallback):
+                break
+        else:
+            root = soup
+
+    headings = root.find_all([f"h{i}" for i in range(1, 7)])
+    lines: list[str] = []
+
+    for h in headings:
+        level = int(h.name[1])
+        title = extract_heading_title(h)
+        heading_id = extract_heading_id(h)
+
+        # Wrap in markdown link syntax when an anchor target exists
+        rendered_title = f"[{title}](#{heading_id})" if heading_id else title
+        lines.append(f"{'#' * level} {rendered_title}")
+
+    return "\n".join(lines)
+
+
+def resolve_heading(target: Tag) -> Tag | None:
+    """
+    Locate an associated heading element from a node, ancestor, or adjacent sibling.
+
+    :param target: Starting HTML element found by the selector.
+    :returns: Matching heading ``Tag`` if resolved, otherwise ``None``.
+    """
+    headings = {f"h{i}" for i in range(1, 7)}
+    if target.name in headings:
+        return target
+    if parent := target.find_parent(headings):
+        return parent
+    if target.name in ("a", "span"):
+        sibling = target.find_next_sibling()
+        if sibling and sibling.name in headings:
+            return sibling
+
+    return None
+
+
+def collect_heading_section(heading: Tag) -> str:
+    """
+    Gather a heading and all subsequent siblings until a heading of equal or higher level.
+
+    :param heading: The starting heading element.
+    :returns: Combined HTML string of the heading and section body.
+    """
+    level = int(heading.name[1])
+    stop_tags = {f"h{i}" for i in range(1, level + 1)}
+
+    nodes = [str(heading)]
+    for sibling in heading.next_siblings:
+        if isinstance(sibling, Tag) and sibling.name in stop_tags:
+            break
+        nodes.append(str(sibling))
+
+    return "".join(nodes)
+
+
+def extract_content(soup: BeautifulSoup, selector: str | None = None) -> str:
+    """
+    Extract target section HTML or fall back to standard document content containers.
+
+    :param soup: The parsed HTML document.
+    :param selector: Optional CSS selector or anchor targeting a specific section.
+    :returns: Extracted HTML string.
+    :raises ValueError: If the explicitly requested selector matches no elements.
+    """
+    if selector:
+        target = soup.select_one(selector)
+        if not target:
+            raise ValueError(f"Selector not found: {selector}")
+
+        if heading := resolve_heading(target):
+            return collect_heading_section(heading)
+        return str(target)
+
+    for fallback in CONTENT_SELECTORS:
+        if element := soup.select_one(fallback):
+            return str(element)
+
+    return str(soup)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """
+    The script entrypoint. This function is executed when running the script.
+
+    :param argv: Optionally, a list of strings representing CLI arguments.
+    :returns: The exit code of the script. Non-zero indicates an error.
+    """
+    try:
+        args = parse_args(argv)
+        html = fetch_html(args.url)
+        soup = BeautifulSoup(html, "html.parser")
+
+        if args.overview:
+            print(generate_overview(soup, args.selector))
+            return 0
+
+        content_html = extract_content(soup, args.selector)
+        print(html_to_markdown(content_html))
+        return 0
+    except Exception as e:
+        err = "".join(format_exception(e) if VERBOSE else format_exception_only(e))
+        print(err, file=stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    exit(main())

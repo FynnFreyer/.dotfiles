@@ -5,6 +5,11 @@ It contains `userChrome.css`, a userscript loader, and some scripts and more.
 
 ## Userscript Loader
 
+> [!IMPORTANT]
+>
+> After an update broke the functionality, I found a CSS only solution to my main problem I used this for in the first place.
+> This is not maintained and unwise to use.
+
 I have built (or rather "borrowed," see Credits) a bare-bones userscript loader that is defined in the [`loader.mjs`](profile/chrome/loader.mjs) file.
 This looks inside the user chrome directory and loads the scripts specified in the `scripts` array into every new window.
 The loader itself uses the `Injector` defined in [`utils.mjs`](profile/chrome/js/utils.mjs).
